@@ -316,7 +316,7 @@ button{font-family:inherit; border:none; cursor:pointer;}
 .guide-link{display:block; width:100%; margin-top:6px; background:none; border:1px dashed var(--line); color:var(--muted); border-radius:14px; padding:12px; font:inherit; font-size:13px; font-weight:600;}
 
 /* HistorySprint : carte d'événement, choix du mode inversé */
-.game-card.hist{aspect-ratio:auto; width:100%; max-width:min(92vw,360px); height:auto; max-height:none; min-height:170px; padding:62px 20px 44px;}
+.game-card.hist{aspect-ratio:auto; width:100%; max-width:min(92vw,360px); height:auto; max-height:none; min-height:170px; padding:54px 20px 38px;}
 .game-card.hist .card-center{max-width:100%; text-align:center;}
 .q-text{font-family:'Inter',sans-serif; font-size:21px; line-height:1.25; font-weight:700; letter-spacing:-.01em; text-align:center;}
 .q-year{font-size:40px;}
@@ -332,9 +332,9 @@ button{font-family:inherit; border:none; cursor:pointer;}
 .dtable .ev{font-weight:600; font-size:13px; line-height:1.25;}
 
 /* Illustration Wikipédia + mode apprentissage */
-.q-img{display:none; width:100%; height:120px; object-fit:cover; border-radius:14px; margin-bottom:6px; background:var(--bg);}
-@media (max-height:720px){ .q-img{height:84px;} .game-card.hist{padding-top:56px;} }
-.qwrap{overflow-y:auto;}
+.q-img{display:none; width:100%; height:auto; max-height:min(190px,24vh); object-fit:contain; border-radius:14px; margin-bottom:6px;}
+@media (max-height:720px){ .q-img{max-height:100px;} .game-card.hist{padding:46px 16px 28px; min-height:0;} .q-text{font-size:18px;} .key{padding:11px 0;} .learn-skip{padding:4px 12px;} }
+.qwrap{overflow-y:auto; align-items:safe center;}
 .mode-btn.learn{background:#1E7A4F;}
 .setup.learn-mode #durRow{opacity:.4; pointer-events:none;}
 .learn-panel{display:none; flex-direction:column; gap:10px; margin-top:4px; max-height:48vh; overflow-y:auto;}
