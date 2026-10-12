@@ -337,10 +337,11 @@ button{font-family:inherit; border:none; cursor:pointer;}
 .qwrap{overflow-y:auto; align-items:safe center;}
 .mode-btn.learn{background:#1E7A4F;}
 .setup.learn-mode #durRow{opacity:.4; pointer-events:none;}
-.learn-panel{display:none; flex-direction:column; gap:10px; margin-top:4px; max-height:48vh; overflow-y:auto;}
+.learn-panel{display:none; flex-direction:column; gap:10px; margin-top:4px; max-height:44vh; overflow-y:auto;}
 .learn-panel.on{display:flex;}
 .lp-res{font-size:16px; font-weight:800;} .lp-res.ok{color:var(--good);} .lp-res.ko{color:var(--bad);}
-.lp-sum{font-size:14px; line-height:1.45; color:var(--ink);}
+.lp-sum{font-size:13.5px; line-height:1.4; color:var(--ink);}
+.game-card.hist.tight{padding:46px 16px 26px; min-height:0;} .game-card.hist.tight .q-text{font-size:18px;}
 .lp-link{display:inline-block; font-size:14px; font-weight:700; color:var(--accent); text-decoration:none;}
 .lp-credit{font-size:11px; color:var(--muted);}
 .learn-skip{display:none; margin:2px auto 0; background:none; color:var(--muted); font-size:13px; font-weight:600; padding:8px 12px; touch-action:manipulation;}
@@ -842,11 +843,24 @@ const EVENTS=[
     for(const p of parts){ if((out+p).length>max && out) break; out+=p; }
     return (out||t.slice(0,max)).trim();
   }
+  // La carte ne défile jamais : on réduit l'illustration (puis la taille du titre) pour qu'elle tienne dans la place disponible.
+  function fitCard(){
+    const wrap=document.querySelector('.qwrap'), card=$('gameCard'), im=$('qImg');
+    card.classList.remove('tight'); im.style.maxHeight='';
+    const has=(im.style.display==='block'), avail=wrap.clientHeight-16, over=()=>card.offsetHeight-avail;
+    if(over()<=0) return;
+    if(has){ const h=im.getBoundingClientRect().height; im.style.maxHeight=Math.max(70,Math.floor(h-over()))+'px'; }
+    if(over()<=0) return;
+    card.classList.add('tight');
+    if(has){ const h=im.getBoundingClientRect().height; im.style.maxHeight=Math.max(48,Math.floor(h-over()))+'px'; }
+    if(over()>0 && has) im.style.display='none';
+  }
+  window.addEventListener('resize', ()=>{ if($('drill').classList.contains('active')) fitCard(); });
   function prefetch(e){ wikiInfo(e).then(i=>{ if(i && i.i){ const im=new Image(); im.referrerPolicy='no-referrer'; im.src=i.i; } }); }
   function showImg(e){
     wikiInfo(e).then(info=>{
       if(cur!==e || !info || !info.i) return;
-      const im=$('qImg'); im.onload=()=>{ if(cur===e) im.style.display='block'; };
+      const im=$('qImg'); im.onload=()=>{ if(cur===e){ im.style.display='block'; fitCard(); } };
       im.src=info.i;
     });
   }
@@ -980,7 +994,7 @@ const EVENTS=[
       $('qSub').textContent = cur.y<0 ? 'En quelle année avant J.-C. ?' : 'En quelle année ?';
       a.style.display=''; a.textContent=' '; a.className='answer num';
     }
-    const im=$('qImg'); im.style.display='none'; im.removeAttribute('src'); im.onload=null;
+    const im=$('qImg'); im.style.display='none'; im.style.maxHeight=''; im.removeAttribute('src'); im.onload=null; $('gameCard').classList.remove('tight');
     $('learnPanel').classList.remove('on');
     if(learnMode){ kp.style.display=''; $('learnSkip').style.display='block'; }
     if(!drillInv) showImg(cur);   // en mode inversé l'image donnerait la réponse : elle apparaît après ton choix
@@ -1037,12 +1051,13 @@ const EVENTS=[
     const r=$('lpRes'); r.className='lp-res '+(isOk?'ok':'ko'); r.textContent = isOk ? '✓ Bonne année : '+yr : '✗ C’était en '+yr;
     $('lpSum').textContent='Chargement du résumé…';
     $('lpLink').href=wikiHref(e.l);
-    $('learnPanel').classList.add('on'); $('learnPanel').scrollTop=0;
+    $('answerEl').style.display='none';
+    $('learnPanel').classList.add('on'); $('learnPanel').scrollTop=0; fitCard();
     pulseCard(isOk?'pop-good':'pop-bad');
     if(!isOk){ const a=$('answerEl'); a.textContent=yr; a.className='answer num reveal'; }
     wikiInfo(e).then(info=>{
       if(cur!==e) return;
-      if(info){ $('lpSum').textContent=shorten(info.x,460); $('lpLink').href=info.u; }
+      if(info){ $('lpSum').textContent=shorten(info.x,330); $('lpLink').href=info.u; }
       else $('lpSum').textContent='Résumé indisponible pour le moment (connexion ?). Tu peux ouvrir la page Wikipédia avec le lien ci-dessous.';
     });
   }
