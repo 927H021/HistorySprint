@@ -331,6 +331,23 @@ button{font-family:inherit; border:none; cursor:pointer;}
 .choice.bad{background:color-mix(in srgb,var(--bad) 16%,var(--card)); border-color:var(--bad);}
 .dtable .ev{font-weight:600; font-size:13px; line-height:1.25;}
 
+/* Illustration Wikipédia + mode apprentissage */
+.q-img{display:none; width:100%; height:120px; object-fit:cover; border-radius:14px; margin-bottom:6px; background:var(--bg);}
+@media (max-height:720px){ .q-img{height:88px;} }
+.qwrap{overflow-y:auto;}
+.mode-btn.learn{background:#1E7A4F;}
+.setup.learn-mode #durRow{opacity:.4; pointer-events:none;}
+.learn-panel{display:none; flex-direction:column; gap:10px; margin-top:4px; max-height:48vh; overflow-y:auto;}
+.learn-panel.on{display:flex;}
+.lp-res{font-size:16px; font-weight:800;} .lp-res.ok{color:var(--good);} .lp-res.ko{color:var(--bad);}
+.lp-sum{font-size:14px; line-height:1.45; color:var(--ink);}
+.lp-link{display:inline-block; font-size:14px; font-weight:700; color:var(--accent); text-decoration:none;}
+.lp-credit{font-size:11px; color:var(--muted);}
+.learn-skip{display:none; margin:2px auto 0; background:none; color:var(--muted); font-size:13px; font-weight:600; padding:8px 12px; touch-action:manipulation;}
+#drill.learning .combo{display:none;}
+#drill.learning .timer:first-of-type{font-size:13px; color:var(--good);}
+.dtable a.wl{color:var(--accent); text-decoration:none;}
+
 /* Pas de barre de défilement visible (Android) */
 *{scrollbar-width:none;}
 *::-webkit-scrollbar{display:none; width:0; height:0;}
@@ -414,6 +431,7 @@ button{font-family:inherit; border:none; cursor:pointer;}
     <div class="game-card hist" id="gameCard">
       <div class="corner tl"><span class="cval" id="cornerTxt1">Antiq.</span><span class="csuit">⏳</span></div>
       <div class="card-center">
+        <img class="q-img" id="qImg" alt="" referrerpolicy="no-referrer">
         <div class="question q-text" id="questionEl">…</div>
         <div class="q-sub" id="qSub">En quelle année ?</div>
         <div class="answer num" id="answerEl">&nbsp;</div>
@@ -423,6 +441,14 @@ button{font-family:inherit; border:none; cursor:pointer;}
   </div>
   <div class="keypad" id="keypad"></div>
   <div class="choices" id="choices"></div>
+  <div class="learn-panel" id="learnPanel">
+    <div class="lp-res" id="lpRes"></div>
+    <div class="lp-sum" id="lpSum"></div>
+    <a class="lp-link" id="lpLink" target="_blank" rel="noopener">Lire la page Wikipédia ↗</a>
+    <div class="lp-credit">Texte et image : Wikipédia (licence CC BY-SA)</div>
+    <button class="btn-pill" id="lpNext">Suivant</button>
+  </div>
+  <button class="learn-skip" id="learnSkip">Je ne sais pas : voir la réponse</button>
 </div>
 
 <div id="results" class="screen">
@@ -626,7 +652,8 @@ const EVENTS=[
 ];
 
   function eraOf(y){ return y<476?'A' : y<1492?'M' : y<1789?'T' : y<1914?'C' : 'X'; }
-  const EV=EVENTS.map(([y,l,lv])=>({y,l,lv,era:eraOf(y)}));
+  const WT=["Fondation de Rome", "Bataille de Marathon", "Bataille des Thermopyles", "Guerre du Péloponnèse", "Procès de Socrate", "Alexandre le Grand", "Hannibal Barca", "Troisième guerre punique", "Bataille d'Alésia", "Passage du Rubicon", "Assassinat de Jules César", "Bataille d'Actium", "Auguste", "Grand incendie de Rome", "Éruption du Vésuve en 79", "Édit de Milan", "Constantinople", "Théodose Ier", "Chute de l'Empire romain d'Occident", "Bataille de Soissons (486)", "Baptême de Clovis", "Hégire", "Bataille de Poitiers (732)", "Couronnement de Charlemagne", "Traité de Verdun", "Hugues Capet", "Bataille d'Hastings", "Première croisade", "Siège de Jérusalem (1099)", "Bataille de Bouvines", "Magna Carta", "Huitième croisade", "Procès des templiers", "Guerre de Cent Ans", "Peste noire", "Bataille d'Azincourt", "Siège d'Orléans", "Jeanne d'Arc", "Chute de Constantinople", "Christophe Colomb", "Vasco de Gama", "Bataille de Marignan", "Quatre-vingt-quinze thèses", "Expédition Magellan-Elcano", "Ordonnance de Villers-Cotterêts", "Massacre de la Saint-Barthélemy", "Édit de Nantes", "Assassinat d'Henri IV", "Mayflower", "Louis XIV", "Traités de Westphalie", "Louis XIV", "Château de Versailles", "Révocation de l'édit de Nantes", "Louis XIV", "Déclaration d'indépendance des États-Unis", "Montgolfière", "Prise de la Bastille", "Déclaration des droits de l'homme et du citoyen de 1789", "Première République (France)", "Louis XVI", "Coup d'État du 18 Brumaire", "Sacre de Napoléon Ier", "Code civil des Français", "Bataille d'Austerlitz", "Campagne de Russie (1812)", "Bataille de Waterloo (1815)", "Conquête de l'Algérie par la France", "Abolition de l'esclavage en France", "Second Empire", "Royaume d'Italie (1861-1946)", "Proclamation d'émancipation", "Guerre de Sécession", "Canal de Suez", "Bataille de Sedan (1870)", "Commune de Paris (1871)", "Proclamation de l'Empire allemand", "Lois Jules Ferry", "Exposition universelle de 1889", "Affaire Dreyfus", "Auguste et Louis Lumière", "Loi du 9 décembre 1905 concernant la séparation des Églises et de l'État", "Titanic", "Première Guerre mondiale", "Bataille de Verdun", "Révolution d'Octobre", "Armistice du 11 novembre 1918", "Traité de Versailles (1919)", "Krach de 1929", "Adolf Hitler", "Front populaire (France)", "Seconde Guerre mondiale", "Appel du 18 Juin", "Rafle du Vélodrome d'Hiver", "Débarquement de Normandie", "Libération de Paris", "Fin de la Seconde Guerre mondiale", "Déclaration d'indépendance d'Israël", "Organisation du traité de l'Atlantique nord", "Guerre d'Algérie", "Traité de Rome (1957)", "Spoutnik 1", "Cinquième République", "Mur de Berlin", "Indépendance de l'Algérie", "Assassinat de John F. Kennedy", "Mai 68", "Apollo 11", "Premier choc pétrolier", "Abolition de la peine de mort en France", "Catastrophe nucléaire de Tchernobyl", "Chute du mur de Berlin", "Réunification allemande", "Dissolution de l'URSS", "Traité de Maastricht", "Coupe du monde de football de 1998", "Attentats du 11 septembre 2001", "Euro", "Incendie de Notre-Dame de Paris", "Pandémie de Covid-19 en France"];
+  const EV=EVENTS.map(([y,l,lv],i)=>({y,l,lv,w:WT[i],era:eraOf(y)}));
   const EV_BY_LABEL={}; EV.forEach(e=>EV_BY_LABEL[e.l]=e);
   function fmtY(y){ return y<0 ? (-y)+' av. J.-C.' : String(y); }
   const store=()=>{ try{ return JSON.parse(localStorage.getItem('hs_data')||'{}'); }catch(e){ return {}; } };
@@ -644,12 +671,14 @@ const EVENTS=[
       save(data);
     } }
 
-  let duration=60, level=1, mode=(data.mode==='inv'?'inv':'cls');
+  let duration=60, level=1, mode=(data.mode==='inv'||data.mode==='learn'?data.mode:'cls');
   function paintMode(){
-    const btn=$('modeBtn'); btn.classList.toggle('inv', mode==='inv'); btn.setAttribute('aria-pressed', mode==='inv');
-    $('modeLbl').textContent = mode==='inv' ? 'Inversé' : 'Classique';
+    const btn=$('modeBtn'); btn.classList.toggle('inv', mode==='inv'); btn.classList.toggle('learn', mode==='learn');
+    btn.setAttribute('aria-label','Mode : '+(mode==='inv'?'inversé':mode==='learn'?'apprentissage':'classique')+'. Toucher pour changer');
+    $('modeLbl').textContent = mode==='inv' ? 'Inversé' : (mode==='learn' ? 'Apprendre' : 'Classique');
+    const st=document.querySelector('.setup'); if(st) st.classList.toggle('learn-mode', mode==='learn');
   }
-  $('modeBtn').onclick=()=>{ mode = mode==='inv' ? 'cls' : 'inv'; data.mode=mode; save(data); paintMode(); refreshHome(); };
+  $('modeBtn').onclick=()=>{ mode = mode==='cls' ? 'inv' : (mode==='inv' ? 'learn' : 'cls'); data.mode=mode; save(data); paintMode(); refreshHome(); };
   paintMode();
   document.querySelectorAll('#durRow .chip').forEach(c=>c.onclick=()=>{
     document.querySelectorAll('#durRow .chip').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); duration=+c.dataset.v;
@@ -752,6 +781,59 @@ const EVENTS=[
   $('heroCard').onclick=()=>openStats();
   refreshHome();
 
+
+  // ---- Wikipédia : résumé, lien et image (API publique, mis en cache sur l'appareil) ----
+  const WIKI_MEM={}; try{ Object.assign(WIKI_MEM, JSON.parse(localStorage.getItem('hs_wiki')||'{}')); }catch(e){}
+  const WIKI_PENDING={};
+  async function wget(url){
+    const c=new AbortController(), t=setTimeout(()=>c.abort(),8000);
+    try{ const r=await fetch(url,{signal:c.signal}); return r.ok ? await r.json() : null; }catch(e){ return null; }
+    finally{ clearTimeout(t); }
+  }
+  async function wikiFetch(e){
+    const sum=async t=>{
+      const j=await wget('https://fr.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(t.replace(/ /g,'_'))+'?redirect=true');
+      return (j && j.type!=='disambiguation' && j.extract) ? j : null;
+    };
+    let j=await sum(e.w||e.l);
+    if(!j){   // titre introuvable : on cherche l'événement par son nom
+      const r=await wget('https://fr.wikipedia.org/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(e.l)+'&srlimit=1&format=json&origin=*');
+      const t=r && r.query && r.query.search && r.query.search[0] && r.query.search[0].title;
+      if(t) j=await sum(t);
+    }
+    if(!j) return null;
+    const url=(j.content_urls && j.content_urls.desktop && j.content_urls.desktop.page) || ('https://fr.wikipedia.org/wiki/'+encodeURIComponent(j.title.replace(/ /g,'_')));
+    return {t:j.title, u:url, x:j.extract, i:(j.thumbnail && j.thumbnail.source) || ''};
+  }
+  function wikiInfo(e){
+    if(WIKI_MEM[e.l]) return Promise.resolve(WIKI_MEM[e.l]);
+    if(WIKI_PENDING[e.l]) return WIKI_PENDING[e.l];
+    return WIKI_PENDING[e.l]=wikiFetch(e).then(info=>{
+      delete WIKI_PENDING[e.l];
+      if(info){ WIKI_MEM[e.l]=info; try{ localStorage.setItem('hs_wiki',JSON.stringify(WIKI_MEM)); }catch(_){} }
+      return info;
+    });
+  }
+  function wikiHref(label){
+    const i=WIKI_MEM[label]; if(i) return i.u;
+    const e=EV_BY_LABEL[label];
+    return e ? 'https://fr.wikipedia.org/wiki/'+encodeURIComponent(e.w.replace(/ /g,'_')) : 'https://fr.wikipedia.org/w/index.php?search='+encodeURIComponent(label);
+  }
+  function shorten(t,max){
+    if(t.length<=max) return t;
+    const parts=t.match(/[^.!?]+[.!?]+(\s|$)/g)||[t]; let out='';
+    for(const p of parts){ if((out+p).length>max && out) break; out+=p; }
+    return (out||t.slice(0,max)).trim();
+  }
+  function prefetch(e){ wikiInfo(e).then(i=>{ if(i && i.i){ const im=new Image(); im.referrerPolicy='no-referrer'; im.src=i.i; } }); }
+  function showImg(e){
+    wikiInfo(e).then(info=>{
+      if(cur!==e || !info || !info.i) return;
+      const im=$('qImg'); im.onload=()=>{ if(cur===e) im.style.display='block'; };
+      im.src=info.i;
+    });
+  }
+
   let recentKeys=[];
   function pushRecent(k){ recentKeys.push(k); if(recentKeys.length>12) recentKeys.shift(); }
   let challengeMode=false, challengePool=[];
@@ -811,16 +893,24 @@ const EVENTS=[
   }
 
   let cur, timeLeft, score, correctCount, wrongCount, combo, tickHandle, answerBuf, times=[], mistakes=[], attempts=[], corrects=[], qTries=0, qid=0, beginTs=0, lastOkTs=0;
-  let drillInv=false, lockInput=false, qStart=0;
+  let drillInv=false, lockInput=false, qStart=0, learnMode=false, learnSeen=0, learnOk=0, nextEv=null;
   const kp=$('keypad'), choicesEl=$('choices');
 
   function startDrill(){
     drillInv = (mode==='inv' && !challengeMode);
+    learnMode = (mode==='learn' && !challengeMode); nextEv=null;
     score=0; correctCount=0; wrongCount=0; combo=0; times=[]; mistakes=[]; attempts=[]; corrects=[]; qTries=0; qid=0; answerBuf=''; recentKeys=[];
     timeLeft=duration;
     $('timerEl').textContent=timeLeft; $('timerEl').classList.remove('warn');
     $('scoreEl').textContent='0'; $('comboEl').classList.remove('show');
     kp.style.display = drillInv ? 'none' : ''; choicesEl.style.display = drillInv ? 'grid' : 'none';
+    $('learnPanel').classList.remove('on');
+    if(learnMode){   // mode apprentissage : pas de chrono, pas de statistiques
+      learnSeen=0; learnOk=0; $('drill').classList.add('learning');
+      $('timerEl').textContent='Apprentissage'; $('timerEl').classList.remove('warn'); $('scoreEl').textContent='0 / 0';
+      show('drill'); nextQuestion(); return;
+    }
+    $('drill').classList.remove('learning'); $('learnSkip').style.display='none';
     runCountdown();
   }
 
@@ -860,7 +950,7 @@ const EVENTS=[
   }
 
   function nextQuestion(){
-    cur=genQuestion(); answerBuf=''; qTries=0; qid++; lockInput=false;
+    cur=nextEv||genQuestion(); nextEv=genQuestion(); prefetch(nextEv); prefetch(cur); answerBuf=''; qTries=0; qid++; lockInput=false;
     $('cornerTxt1').textContent=ERA_SHORT[cur.era]; $('cornerTxt2').textContent=ERA_SHORT[cur.era];
     const a=$('answerEl'), q=$('questionEl');
     if(drillInv){
@@ -873,6 +963,10 @@ const EVENTS=[
       $('qSub').textContent = cur.y<0 ? 'En quelle année avant J.-C. ?' : 'En quelle année ?';
       a.style.display=''; a.textContent=' '; a.className='answer num';
     }
+    const im=$('qImg'); im.style.display='none'; im.removeAttribute('src'); im.onload=null;
+    $('learnPanel').classList.remove('on');
+    if(learnMode){ kp.style.display=''; $('learnSkip').style.display='block'; }
+    if(!drillInv) showImg(cur);   // en mode inversé l'image donnerait la réponse : elle apparaît après ton choix
     qStart=performance.now();
   }
 
@@ -892,6 +986,8 @@ const EVENTS=[
   function judge(isOk, given, now){
     const dt=(now-lastOkTs)/1000, lab=cur.l, yr=fmtY(cur.y);
     qTries=1; lockInput=true;
+    if(drillInv) showImg(cur);
+    if(learnMode){ showLearn(isOk, yr); return; }
     attempts.push({id:qid, q:lab, ok:isOk});
     const hist=ok=>{ const h=(data.qStats[lab]=data.qStats[lab]||[]); h.push([Math.round(dt*100)/100, ok?1:2]); if(h.length>6) h.shift(); };
     if(isOk){
@@ -914,6 +1010,27 @@ const EVENTS=[
       setTimeout(()=>{ lastOkTs=performance.now(); nextQuestion(); }, 1300);
     }
   }
+
+  function showLearn(isOk, yr){
+    learnSeen++; if(isOk) learnOk++;
+    $('scoreEl').textContent=learnOk+' / '+learnSeen;
+    isOk ? sound.correct() : sound.wrong();
+    const e=cur;
+    kp.style.display='none'; $('learnSkip').style.display='none';
+    const r=$('lpRes'); r.className='lp-res '+(isOk?'ok':'ko'); r.textContent = isOk ? '✓ Bonne année : '+yr : '✗ C’était en '+yr;
+    $('lpSum').textContent='Chargement du résumé…';
+    $('lpLink').href=wikiHref(e.l);
+    $('learnPanel').classList.add('on'); $('learnPanel').scrollTop=0;
+    pulseCard(isOk?'pop-good':'pop-bad');
+    if(!isOk){ const a=$('answerEl'); a.textContent=yr; a.className='answer num reveal'; }
+    wikiInfo(e).then(info=>{
+      if(cur!==e) return;
+      if(info){ $('lpSum').textContent=shorten(info.x,460); $('lpLink').href=info.u; }
+      else $('lpSum').textContent='Résumé indisponible pour le moment (connexion ?). Tu peux ouvrir la page Wikipédia avec le lien ci-dessous.';
+    });
+  }
+  $('lpNext').onclick=()=>{ if(learnMode) nextQuestion(); };
+  $('learnSkip').onclick=()=>{ if(learnMode && !lockInput) judge(false,'—',performance.now()); };
 
   const keys=['7','8','9','4','5','6','1','2','3','⌫','0','✓'];
   function pressKey(k){
@@ -1111,7 +1228,7 @@ const EVENTS=[
       title='Erreurs';
       sub=plural(mistakes.length,'erreur','erreurs')+' cette séance';
       html = mistakes.length ? `<table class="dtable"><thead><tr><th>N°</th><th>Événement</th><th class="r">Ta réponse</th><th class="r">Année</th></tr></thead><tbody>`
-        + mistakes.map((m,i)=>`<tr><td class="n">${i+1}</td><td class="ev">${m.q}</td><td class="m r ko">${m.given}</td><td class="m r ok">${m.ans}</td></tr>`).join('')
+        + mistakes.map((m,i)=>`<tr><td class="n">${i+1}</td><td class="ev"><a class="wl" href="${wikiHref(m.q)}" target="_blank" rel="noopener">${m.q} ↗</a></td><td class="m r ko">${m.given}</td><td class="m r ok">${m.ans}</td></tr>`).join('')
         + `</tbody></table>` : '<div class="err-empty">Aucune erreur — sans faute 🎉</div>';
     }else if(type==='accuracy'){
       title='Précision';
@@ -1187,7 +1304,7 @@ const EVENTS=[
   $('detailBack').onclick=()=>show('results');
 
   function exitToHome(){
-    clearInterval(tickHandle);
+    clearInterval(tickHandle); learnMode=false; $('drill').classList.remove('learning');
     show('home');
   }
   $('exitBtn').addEventListener('pointerdown', e=>{ e.preventDefault(); exitToHome(); });
@@ -1342,7 +1459,7 @@ const EVENTS=[
 
   /* ---- Guide des boutons ---- */
   const HOME_TOUR=[
-    {sel:'#modeBtn', t:'<b>Classique / Inversé</b>Touche pour changer de mode. <b style="display:inline">Classique</b> (bleu) : on te donne un événement, tu tapes son année. <b style="display:inline;color:#D13A3A">Inversé</b> (rouge) : on te donne une année, tu retrouves l\u2019événement parmi 4 choix.'},
+    {sel:'#modeBtn', t:'<b>Trois modes</b>Touche pour changer. <b style="display:inline">Classique</b> (bleu) : on te donne un événement, tu tapes son année. <b style="display:inline;color:#D13A3A">Inversé</b> (rouge) : on te donne une année, tu retrouves l\u2019événement. <b style="display:inline;color:#1E7A4F">Apprendre</b> (vert) : sans chrono, avec le résumé et la page Wikipédia de chaque événement.'},
     {sel:'#bestPill', t:'<b>Record</b>Ton meilleur score en mode classique (le mode inversé a son propre record).'},
     {sel:'#heroCard', t:'<b>Ta série</b>Les jours d\u2019affilée où tu t\u2019entraînes, avec la météo de ta semaine. Touche-la pour ouvrir les statistiques.'},
     {sel:'.setup', t:'<b>Réglages</b>Choisis la durée, le niveau (événements de plus en plus pointus) et les périodes à réviser, de l\u2019Antiquité à aujourd\u2019hui.'},
