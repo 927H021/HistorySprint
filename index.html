@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HistorySprint</title>
+<meta name="theme-color" content="#F7F7F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161A" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HistorySprint">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<style>
+/* Polices embarquées (fonctionnent hors ligne) */
+@font-face{font-family:'Inter';font-weight:400;font-style:normal;font-display:swap;src:url('Inter-Regular.woff') format('woff');}
+@font-face{font-family:'Inter';font-weight:500;font-style:normal;font-display:swap;src:url('Inter-Medium.woff') format('woff');}
+@font-face{font-family:'Inter';font-weight:600;font-style:normal;font-display:swap;src:url('Inter-SemiBold.woff') format('woff');}
+@font-face{font-family:'Inter';font-weight:700;font-style:normal;font-display:swap;src:url('Inter-Bold.woff') format('woff');}
+@font-face{font-family:'JetBrains Mono';font-weight:400 600;font-style:normal;font-display:swap;src:url('JetBrainsMono-Regular.woff') format('woff');}
+@font-face{font-family:'JetBrains Mono';font-weight:700 900;font-style:normal;font-display:swap;src:url('JetBrainsMono-Bold.woff') format('woff');}
+html{touch-action:manipulation; overscroll-behavior:none;}
+body{-webkit-user-select:none; user-select:none; -webkit-touch-callout:none; overscroll-behavior:none;}
+:root{
+  --bg:#F7F7F4; --ink:#15181C; --muted:#8A8F98; --line:#E4E3DD;
+  --accent:#2F6FED; --accent-soft:#E9F0FF; --good:#1E8E5A; --bad:#E5484D; --warn:#C77700; --fast:#00C46A;
+  --card:#FFFFFF; --s1:#2a78d6; --s2:#eb6834;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14161A; --ink:#F2F3F5; --muted:#9096A0; --line:#2A2D33;
+    --accent:#5B8DFF; --accent-soft:#1E2A45; --good:#3ECB86; --bad:#FF6B6E; --warn:#F0A63A; --fast:#2EF59A; --card:#1B1E24; --s1:#3987e5; --s2:#d95926;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14161A; --ink:#F2F3F5; --muted:#9096A0; --line:#2A2D33;
+  --accent:#5B8DFF; --accent-soft:#1E2A45; --good:#3ECB86; --bad:#FF6B6E; --warn:#F0A63A; --fast:#2EF59A; --card:#1B1E24; --s1:#3987e5; --s2:#d95926;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{
+  font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--ink);
+  height:100%; display:flex; flex-direction:column; overflow:hidden; -webkit-tap-highlight-color:transparent;
+}
+.num{font-family:'JetBrains Mono',monospace;}
+.screen{flex:1; display:none; flex-direction:column; padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));}
+.screen.active{display:flex;}
+/* HOME */
+#home{min-height:0; padding-top:calc(14px + env(safe-area-inset-top,0px));}
+.home-scroll{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:16px;}
+.home-scroll::-webkit-scrollbar{display:none;}
+.home-top{display:flex; align-items:center; justify-content:space-between;}
+.brand{font-size:17px; font-weight:800; letter-spacing:-.02em;}
+.brand span{color:var(--accent);}
+.top-right{display:flex; align-items:center; gap:8px;}
+.mode-btn{display:flex; align-items:center; gap:6px; height:32px; padding:0 11px; border-radius:20px; background:#375D8D; color:#fff; font-size:12px; font-weight:700; touch-action:manipulation; -webkit-font-smoothing:antialiased;}
+.mode-btn svg{width:14px; height:14px; flex:none;}
+.mode-btn:active{filter:brightness(1.12);}
+.mode-btn.inv{background:#D13A3A;}
+.best-pill{display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--muted); background:var(--card); border:1px solid var(--line); padding:6px 11px; border-radius:20px;}
+.best-pill svg{width:13px; height:13px; flex:none; color:#E3A400;}
+.best-pill b{color:var(--ink); font-weight:700;}
+.hero-card{margin-top:14px; padding:16px 16px 14px; border-radius:22px; color:#fff; background:linear-gradient(135deg,#2F4F7F,#4C78AE); touch-action:manipulation;}
+.hero-card:active{filter:brightness(1.06);}
+.hc-title{font-size:13px; font-weight:600; opacity:.85;}
+.hc-row{display:flex; align-items:center; gap:10px; margin-top:4px;}
+.hc-row svg{width:34px; height:34px; flex:none;}
+.hero-num{font-size:52px; font-weight:800; line-height:1; letter-spacing:-.03em;}
+.hero-label{font-size:15px; font-weight:600; opacity:.92; margin-top:14px;}
+.hc-week{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.22);}
+.hc-day{text-align:center; font-size:10px; font-weight:600; opacity:1; color:rgba(255,255,255,.8);}
+.hc-day i{display:block; width:100%; max-width:30px; aspect-ratio:1; border-radius:50%; margin:0 auto 4px; background:rgba(255,255,255,.18);}
+.hc-day.today{color:#fff;} .hc-day.today i{box-shadow:0 0 0 2px #fff;}
+.hc-day i.w3{background:#7DB6FF;} .hc-day i.w2{background:#A9C3E2;} .hc-day i.w1{background:#B9C2CE;} .hc-day i.w0{background:#6B7C96;}
+.hero-card.is-gold{background:linear-gradient(135deg,#F8D45A,#E2A100); color:#3B2A00;}
+.hero-card.is-gold .hc-week{border-top-color:rgba(59,42,0,.2);} .hero-card.is-gold .hc-day{color:rgba(59,42,0,.75);} .hero-card.is-gold .hc-day.today{color:#3B2A00;} .hero-card.is-gold .hc-day.today i{box-shadow:0 0 0 2px #3B2A00;}
+.hero-card.is-gold .hc-day i{background:rgba(59,42,0,.15);}
+.hero-card.is-gold .hc-day i.w3{background:#3B2A00;} .hero-card.is-gold .hc-day i.w2{background:rgba(59,42,0,.55);} .hero-card.is-gold .hc-day i.w1{background:rgba(59,42,0,.4);} .hero-card.is-gold .hc-day i.w0{background:rgba(59,42,0,.3);}
+.setup{margin-top:12px; background:var(--card); border:1px solid var(--line); border-radius:22px; padding:6px 14px 14px;}
+.section-label{font-size:12px; color:var(--muted); font-weight:600; margin-top:12px; margin-bottom:7px;}
+.seg{display:flex; gap:4px; padding:3px; border-radius:14px; background:var(--bg); border:1px solid var(--line);}
+.chip{flex:1 1 0; min-width:0; text-align:center; padding:9px 0; border-radius:11px; border:1px solid transparent; font-size:13px; font-weight:600; color:var(--muted); touch-action:manipulation;}
+.chip.sel{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+.tables-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:6px;}
+.tchip{text-align:center; padding:10px 0; border-radius:11px; border:1px solid var(--line); font-size:14px; font-weight:700; color:var(--muted); background:var(--bg); font-family:'JetBrains Mono',monospace; touch-action:manipulation;}
+.tchip.sel{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+.tchip.all{grid-column:span 5; font-family:'Inter',sans-serif; font-size:13px; padding:9px 0;}
+.actions{flex:none; position:relative; display:flex; flex-direction:column; gap:10px; padding-top:12px;}
+.actions::before{content:''; position:absolute; left:-20px; right:-20px; top:-14px; height:26px; background:linear-gradient(to bottom, rgba(0,0,0,0), var(--bg)); pointer-events:none; z-index:2;}
+.act-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.act-tile{display:flex; align-items:center; gap:10px; text-align:left; background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:18px; padding:11px 12px; touch-action:manipulation;}
+.act-tile:active{background:var(--accent-soft);}
+.act-ico{flex:none; width:34px; height:34px; border-radius:11px; background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center;}
+.act-ico svg{width:19px; height:19px;}
+.act-t{font-size:14px; font-weight:700; line-height:1.15;} .act-s{font-size:11px; color:var(--muted); margin-top:2px; line-height:1.2;}
+button{font-family:inherit; border:none; cursor:pointer;}
+@media (max-height:720px){
+  #home{padding-top:calc(8px + env(safe-area-inset-top,0px));}
+  .hero-card{margin-top:10px; padding:11px 14px 10px;} .hero-num{font-size:38px;} .hc-row svg{width:28px; height:28px;} .hero-label{margin-top:8px !important;}
+  .hc-week{margin-top:8px; padding-top:8px;} .hc-day i{max-width:22px; margin-bottom:3px;}
+  .setup{margin-top:10px; padding:2px 12px 12px;} .section-label{margin-top:8px; margin-bottom:5px;}
+  .chip{padding:7px 0;} .tchip{padding:8px 0;} .tchip.all{padding:7px 0;}
+  .act-tile{padding:8px 10px;} .act-s{display:none;}
+  .btn-pill{padding:14px 24px; font-size:18px;}
+}
+.btn-primary{background:var(--ink); color:var(--bg); font-size:17px; font-weight:700; padding:18px; border-radius:16px;}
+.btn-pill{display:flex; align-items:center; justify-content:center; gap:12px; background:#375D8D; color:#fff; font-size:20px; font-weight:700; letter-spacing:-.01em; padding:18px 24px; border-radius:999px; box-shadow:0 10px 20px -12px rgba(55,93,141,.85); touch-action:manipulation; transition:transform .08s, filter .08s;}
+.btn-pill:active{transform:scale(.97); filter:brightness(1.1);}
+.btn-pill svg{flex:none; display:block;}
+.btn-secondary{background:var(--card); color:var(--ink); border:1px solid var(--line); font-size:15px; font-weight:600; padding:14px; border-radius:16px; display:flex; justify-content:space-between; align-items:center;}
+.btn-secondary .r{color:var(--muted); font-weight:500; font-size:13px;}
+/* COUNTDOWN */
+#countdown{align-items:center; justify-content:center;}
+.cd-num{font-size:120px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--accent);}
+/* DRILL */
+#drill{padding-top:calc(14px + env(safe-area-inset-top,0px)); min-height:0;}
+.drill-exit{font-size:13px; color:var(--muted); font-weight:600; padding:6px 0 10px; touch-action:manipulation;}
+.drill-top{display:flex; justify-content:space-between; align-items:center;}
+.timer{font-size:15px; font-weight:700;} .timer.warn{color:var(--bad);}
+.combo{font-size:13px; font-weight:600; color:var(--accent); opacity:0; transition:opacity .15s;}
+.combo.show{opacity:1;}
+.qwrap{flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:8px 0; overflow:hidden;}
+.game-card{
+  position:relative; height:100%; max-height:230px; min-height:130px; aspect-ratio:0.68; width:auto; max-width:78vw;
+  background:var(--card); border:1px solid var(--line); border-radius:22px;
+  box-shadow:0 16px 34px -16px rgba(0,0,0,.28), 0 3px 8px rgba(0,0,0,.08);
+  display:flex; align-items:center; justify-content:center;
+}
+.corner{position:absolute; display:flex; flex-direction:column; align-items:center; line-height:1.1; font-family:'JetBrains Mono',monospace; color:var(--accent);}
+.corner .cval{font-size:14px; font-weight:800;}
+.corner .csuit{font-size:11px; margin-top:2px;}
+.corner.tl{top:14px; left:16px;}
+.corner.br{bottom:14px; right:16px; transform:rotate(180deg);}
+.card-center{display:flex; flex-direction:column; align-items:center; gap:10px;}
+.game-card.pop-good{animation:popGood .32s ease;}
+.game-card.pop-bad{animation:popBad .32s ease;}
+@keyframes popGood{
+  0%{transform:scale(1); border-color:var(--line);}
+  35%{transform:scale(1.06); border-color:var(--good); box-shadow:0 16px 34px -16px rgba(30,142,90,.4), 0 3px 8px rgba(0,0,0,.08);}
+  100%{transform:scale(1); border-color:var(--line);}
+}
+@keyframes popBad{
+  0%{transform:translateX(0); border-color:var(--line);}
+  20%{transform:translateX(-8px); border-color:var(--bad);}
+  40%{transform:translateX(7px);}
+  60%{transform:translateX(-5px);}
+  80%{transform:translateX(3px);}
+  100%{transform:translateX(0); border-color:var(--line);}
+}
+.question{font-size:34px; font-weight:700; letter-spacing:-.02em;}
+.answer{font-size:26px; font-weight:800; min-height:36px; color:var(--accent); border-bottom:3px solid var(--line); padding:0 8px 3px; min-width:80px; text-align:center;}
+.answer.inv{display:flex; align-items:flex-end; justify-content:center; gap:8px; border-bottom-color:transparent; min-width:150px;}
+.answer.inv .slot{display:inline-block; min-width:34px; padding:0 4px 2px; border-bottom:3px solid var(--line); text-align:center;}
+.answer.inv .slot.on{border-bottom-color:var(--accent);}
+.answer.inv .xs{color:var(--muted); font-weight:600; padding-bottom:2px;}
+.answer.inv.flash-good .slot{border-bottom-color:var(--good);} .answer.inv.flash-bad .slot{border-bottom-color:var(--bad);}
+.answer.flash-good{color:var(--good); border-color:var(--good);}
+.answer.flash-bad{color:var(--bad); border-color:var(--bad); animation:shake .25s;}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.keypad{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px;}
+.key{padding:16px 0; font-size:22px; font-weight:600; background:var(--card); border:1px solid var(--line); border-radius:14px; color:var(--ink); touch-action:manipulation; user-select:none;}
+.key:active, .key.pressed{background:var(--accent-soft); border-color:var(--accent); transform:scale(0.96);}
+.key.wide{grid-column:span 1;}
+/* RESULTS */
+.res-score{font-size:56px; font-weight:800; text-align:center; margin-top:10px;}
+.res-label{text-align:center; color:var(--muted); font-size:13px; margin-top:2px;}
+.big-cc-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:22px;}
+.big-cc{border-radius:16px; padding:16px 8px; text-align:center; border:1px solid var(--line);}
+.big-cc.good{background:color-mix(in srgb, var(--good) 12%, var(--card));}
+.big-cc.bad{background:color-mix(in srgb, var(--bad) 12%, var(--card));}
+.big-cc-v{font-size:38px; font-weight:800;}
+.big-cc.good .big-cc-v{color:var(--good);} .big-cc.bad .big-cc-v{color:var(--bad);}
+.big-cc-l{font-size:12px; color:var(--muted); margin-top:2px; font-weight:600;}
+.err-row{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;}
+.err-q{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:16px;}
+.err-detail{font-size:12px; color:var(--muted); text-align:right;}
+.err-detail b{color:var(--bad);}
+.err-empty{text-align:center; color:var(--muted); font-size:14px; margin-top:40px;}
+/* Tuiles cliquables + tableaux de détail */
+.tap{cursor:pointer; position:relative; touch-action:manipulation; user-select:none; -webkit-user-select:none; transition:transform .08s;}
+.tap:active{transform:scale(0.97);}
+.tap::after{content:'›'; position:absolute; top:6px; right:10px; font-size:16px; color:var(--muted); font-weight:700;}
+#results{overflow-y:auto; -webkit-overflow-scrolling:touch;}
+.weather{margin-top:calc(8px + env(safe-area-inset-top,0px)); padding:16px 16px 14px; border-radius:22px; color:#fff; box-shadow:0 10px 24px -14px rgba(20,40,80,.55);}
+.w-head{text-align:center;}
+.w-title{font-size:14px; font-weight:600; opacity:.85;}
+.w-score{font-size:60px; font-weight:800; line-height:1.1; margin-top:2px;}
+.w-record{display:inline-block; margin-top:6px; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600; background:rgba(255,255,255,.16); color:rgba(255,255,255,.9);}
+.w-record.is-best{background:rgba(255,255,255,.95); color:#14683F;}
+.w-row{display:flex; align-items:center; gap:14px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.22);}
+.weather.w-sunny{background:linear-gradient(135deg,#2F6FDC,#5A9FF0);}
+.weather.w-partly{background:linear-gradient(135deg,#3F69A3,#6F93BF);}
+.weather.w-cloudy{background:linear-gradient(135deg,#5A6779,#7D8A9B);}
+.weather.w-rain{background:linear-gradient(135deg,#34445C,#5B6E88);}
+.w-ico{flex:none;} .w-ico svg{width:58px; height:58px; display:block;}
+.w-main{font-size:19px; font-weight:700; letter-spacing:-.01em;}
+.w-sub{font-size:12px; opacity:.9; margin-top:3px;}
+#detailScreen{min-height:0;}
+.detail-scroll{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:12px;}
+.rc-legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12px; color:var(--ink); margin:2px 0 8px;}
+.rc-legend span::before, .rc-tip .k::before{content:''; display:inline-block; width:16px; height:2px; border-radius:2px; margin-right:6px; vertical-align:3px; background:var(--c);}
+.rc-legend .k1,.rc-tip .k1{--c:var(--s1);} .rc-legend .k2,.rc-tip .k2{--c:var(--s2);}
+.rc-wrap{position:relative; margin:0 -4px;}
+.rc-wrap svg{display:block; width:100%; height:auto; touch-action:pan-y; user-select:none; -webkit-user-select:none;}
+.rc-grid{stroke:var(--line); stroke-width:1; shape-rendering:crispEdges;}
+.rc-tick{font-size:10px; fill:var(--muted); font-family:'Inter',sans-serif;}
+.rc-zone.z3{fill:var(--fast);} .rc-zone.z2{fill:var(--good);} .rc-zone.z1{fill:var(--warn);} .rc-zone.z0{fill:var(--bad);}
+.rc-zone{fill-opacity:.09;}
+.rc-line{fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.rc-l1{stroke:var(--s1);} .rc-l2{stroke:var(--s2);}
+.rc-early{opacity:.35;}
+.rc-final{stroke:var(--muted); stroke-width:1; stroke-dasharray:2 3;}
+.rc-flabel{font-size:10px; font-weight:700; fill:var(--ink); font-family:'Inter',sans-serif;}
+.rc-dot{stroke:var(--bg); stroke-width:2;}
+.rc-cross{stroke:var(--muted); stroke-width:1;}
+.rc-tip{position:absolute; top:6px; left:0; pointer-events:none; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:8px 10px; font-size:12px; color:var(--ink); box-shadow:0 8px 20px -10px rgba(0,0,0,.35); white-space:nowrap; display:none; z-index:3;}
+.rc-tip .t0{font-weight:700; margin-bottom:4px;} .rc-tip .t0 span{color:var(--muted); font-weight:600;}
+.rc-tip .row{display:flex; justify-content:space-between; gap:14px; margin-top:2px;} .rc-tip .row b{font-weight:800;}
+.rc-details{margin-top:14px;} .rc-details summary{font-size:13px; font-weight:600; color:var(--accent); padding:8px 0; list-style:none; cursor:pointer;}
+.rc-details summary::-webkit-details-marker{display:none;} .rc-details summary::before{content:'›'; display:inline-block; margin-right:6px; transition:transform .15s;} .rc-details[open] summary::before{transform:rotate(90deg);}
+.cal-cell.tappable{cursor:pointer; touch-action:manipulation;} .cal-cell.tappable:active{filter:brightness(1.08);}
+.act-tile.is-off{opacity:.62;}
+.toast{position:fixed; left:16px; right:16px; bottom:calc(24px + env(safe-area-inset-bottom,0px)); z-index:60; background:var(--ink); color:var(--bg); font-size:13px; font-weight:600; line-height:1.35; padding:12px 14px; border-radius:14px; box-shadow:0 12px 28px -14px rgba(0,0,0,.6); opacity:0; transform:translateY(10px); pointer-events:none; transition:opacity .2s, transform .2s;}
+.toast.show{opacity:1; transform:none;}
+.sheet{position:fixed; inset:0; z-index:50; display:none; align-items:flex-end;}
+.sheet.open{display:flex;}
+.sheet-bg{position:absolute; inset:0; background:rgba(10,14,22,.5); animation:sheetFade .18s ease-out;}
+.sheet-card{position:relative; width:100%; max-height:88%; overflow-y:auto; background:var(--bg); border-radius:26px 26px 0 0; padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px)); box-shadow:0 -16px 40px -20px rgba(0,0,0,.5); animation:sheetUp .24s cubic-bezier(.2,.8,.2,1);}
+.sheet-grip{width:40px; height:5px; border-radius:3px; background:var(--line); margin:0 auto 12px;}
+.day-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
+.day-grid .stat-card{padding:14px 8px;} .day-grid .stat-v{font-size:26px; font-weight:800;}
+.day-empty{text-align:center; color:var(--muted); font-size:14px; padding:26px 0 14px;}
+.day-close{display:block; width:100%; margin-top:14px; padding:14px; border-radius:16px; background:var(--card); border:1px solid var(--line); color:var(--ink); font-size:15px; font-weight:600;}
+@keyframes sheetUp{from{transform:translateY(40px); opacity:0;} to{transform:none; opacity:1;}}
+@keyframes sheetFade{from{opacity:0;} to{opacity:1;}}
+.dtable{width:100%; border-collapse:collapse; font-size:14px; margin-top:6px;}
+.dtable th{position:sticky; top:0; background:var(--bg); text-align:left; font-size:11px; color:var(--muted); font-weight:600; padding:8px 6px; border-bottom:1px solid var(--line);}
+.dtable td{padding:10px 6px; border-bottom:1px solid var(--line);}
+.dtable .n{color:var(--muted); width:34px;}
+.dtable .m{font-family:'JetBrains Mono',monospace; font-weight:700;}
+.dtable .r{text-align:right;} .dtable th.r{text-align:right;}
+.dtable .ok{color:var(--good); font-weight:700;} .dtable .ko{color:var(--bad); font-weight:700;}
+.dtable tr.p-top td{background:color-mix(in srgb, var(--good) 10%, transparent);}
+.dtable tr.p-fast td{background:color-mix(in srgb, var(--fast) 20%, transparent);}
+.dtable tr.p-mid td{background:color-mix(in srgb, var(--warn) 13%, transparent);}
+.dtable tr.p-low td{background:color-mix(in srgb, var(--bad) 12%, transparent);}
+.pill{display:inline-block; min-width:74px; white-space:nowrap; text-align:center; padding:3px 8px; border-radius:20px; font-family:'JetBrains Mono',monospace; font-weight:800; font-size:13px; color:#fff;}
+.pill.p-fast{background:var(--fast); color:#06351F;} .pill.p-top{background:var(--good);} .pill.p-mid{background:var(--warn);} .pill.p-low{background:var(--bad);}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .pill{color:#14161A;} }
+:root[data-theme="dark"] .pill{color:#14161A;}
+.pill.p-fast{color:#06351F !important;}
+.note{font-size:11px; color:var(--muted); line-height:1.4; margin:0 0 8px;} .note b{color:var(--ink); font-weight:600;}
+.legend{display:flex; flex-wrap:wrap; gap:6px 12px; font-size:11px; color:var(--muted); margin:2px 0 8px;}
+.legend span::before{content:''; display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:-1px;}
+.legend .l-fast::before{background:var(--fast);} .legend .l-top::before{background:var(--good);} .legend .l-mid::before{background:var(--warn);} .legend .l-low::before{background:var(--bad);}
+.stat-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:26px;}
+.stat-card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 8px; text-align:center;}
+.stat-v{font-size:20px; font-weight:700;} .stat-l{font-size:11px; color:var(--muted); margin-top:2px;}
+/* STATS */
+#statsScreen{min-height:0;}
+#statsScreen h2{font-size:20px; margin:0 0 4px;}
+.back{font-size:13px; color:var(--muted); margin-bottom:14px; font-weight:600;}
+.month-nav{display:flex; align-items:center; justify-content:space-between; margin:6px 0 10px;}
+.month-title{font-size:16px; font-weight:700; text-transform:capitalize;}
+.mnav{width:40px; height:36px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:20px; font-weight:700; line-height:1; touch-action:manipulation;}
+.mnav:disabled{opacity:.3;}
+.gold-card{border-radius:18px; padding:14px 16px; margin:4px 0 12px; border:1px solid var(--line); background:var(--card);}
+.gold-card .g-t{font-size:15px; font-weight:700;} .gold-card .g-s{font-size:12px; color:var(--muted); margin-top:3px;}
+.gold-dots{display:flex; gap:6px; margin-top:10px;}
+.gold-dots i{flex:1; height:8px; border-radius:6px; background:var(--line);}
+.gold-dots i.on{background:#E3A400;}
+.gold-card.is-gold{background:linear-gradient(135deg,#F8D45A,#E2A100); border-color:#C98F00; color:#3B2A00; box-shadow:0 10px 24px -14px rgba(180,120,0,.7);}
+.gold-card.is-gold .g-s{color:rgba(59,42,0,.8);}
+.gold-card.is-gold .gold-dots i{background:rgba(59,42,0,.22);} .gold-card.is-gold .gold-dots i.on{background:#3B2A00;}
+.cal-head,.cal{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+.cal-head{margin-bottom:4px;} .cal-head span{text-align:center; font-size:11px; color:var(--muted); font-weight:600;}
+.cal-cell{position:relative; aspect-ratio:1; border-radius:10px; border:1px solid var(--line); background:var(--card); overflow:hidden; display:flex; align-items:flex-end; justify-content:center;}
+.cal-cell.blank{border:none; background:none;}
+.cal-cell .dn{position:absolute; top:3px; left:5px; font-size:10px; font-weight:700; color:var(--muted); z-index:1;}
+.cal-cell svg{width:78%; height:78%; display:block; margin-bottom:-2px;}
+.cal-cell.future{opacity:.4;}
+.cal-cell.w-sunny{background:linear-gradient(135deg,#2F6FDC,#5A9FF0); border-color:transparent;}
+.cal-cell.w-partly{background:linear-gradient(135deg,#3F69A3,#6F93BF); border-color:transparent;}
+.cal-cell.w-cloudy{background:linear-gradient(135deg,#5A6779,#7D8A9B); border-color:transparent;}
+.cal-cell.w-rain{background:linear-gradient(135deg,#34445C,#5B6E88); border-color:transparent;}
+.cal-cell[class*="w-"] .dn{color:rgba(255,255,255,.85);}
+.cal-cell.today{outline:2px solid var(--accent); outline-offset:1px;}
+.cal-cell.gold{box-shadow:0 0 0 2px #E3A400;}
+.cal-cell.gold::after{content:'★'; position:absolute; top:2px; right:4px; font-size:10px; color:#FFD34D; z-index:1;}
+.m-sum{display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin-top:12px; font-size:12px; color:var(--muted);}
+.m-sum b{color:var(--ink); font-weight:700;}
+.m-sum span::before{content:''; display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:-1px; background:var(--line);}
+.m-sum .s3::before{background:#5A9FF0;} .m-sum .s2::before{background:#6F93BF;} .m-sum .s1::before{background:#7D8A9B;} .m-sum .s0::before{background:#34445C;}
+.row-line{display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line); font-size:14px;}
+.row-line .v{font-weight:700;}
+
+/* Guide des boutons (première utilisation) */
+.tour{position:fixed; inset:0; z-index:90; display:none;}
+.tour.on{display:block;}
+.tour-ring{position:fixed; border-radius:18px; box-shadow:0 0 0 100vmax rgba(10,15,25,.66); outline:2px solid #fff; transition:all .25s ease; pointer-events:none;}
+.tour-bubble{position:fixed; left:16px; width:calc(100vw - 32px); max-width:340px; background:var(--card); color:var(--ink); border-radius:18px; padding:14px 16px 12px; box-shadow:0 16px 40px -12px rgba(0,0,0,.55); font-size:14px; line-height:1.4;}
+.tour-bubble b{display:block; font-size:15px; margin-bottom:4px;}
+.tour-arrow{position:absolute; width:16px; height:16px; background:var(--card); transform:rotate(45deg); border-radius:3px; animation:tourBob 1s ease-in-out infinite;}
+@keyframes tourBob{0%,100%{margin-top:0}50%{margin-top:-4px}}
+.tour-foot{display:flex; align-items:center; justify-content:space-between; margin-top:10px; gap:10px;}
+.tour-count{font-size:12px; color:var(--muted);}
+.tour-skip{background:none; border:0; color:var(--muted); font:inherit; font-size:13px; font-weight:600; padding:8px 6px;}
+.tour-next{background:var(--accent); color:#fff; border:0; border-radius:12px; font:inherit; font-size:14px; font-weight:700; padding:9px 18px;}
+.guide-link{display:block; width:100%; margin-top:6px; background:none; border:1px dashed var(--line); color:var(--muted); border-radius:14px; padding:12px; font:inherit; font-size:13px; font-weight:600;}
+
+/* HistorySprint : carte d'événement, choix du mode inversé */
+.game-card.hist{aspect-ratio:auto; width:100%; max-width:min(92vw,360px); height:auto; max-height:none; min-height:170px; padding:44px 20px 40px;}
+.game-card.hist .card-center{max-width:100%; text-align:center;}
+.q-text{font-family:'Inter',sans-serif; font-size:21px; line-height:1.25; font-weight:700; letter-spacing:-.01em; text-align:center;}
+.q-year{font-size:40px;}
+.q-sub{font-size:12px; font-weight:600; color:var(--muted); text-align:center;}
+.game-card.hist .corner.br .cval{display:none;}
+.answer.reveal{color:var(--good); border-color:var(--good);}
+.tchip.era{font-family:'Inter',sans-serif; font-size:12px; padding:11px 0;}
+.choices{display:none; grid-template-columns:1fr; gap:8px; margin-top:4px;}
+.choice{padding:13px 14px; font-size:14px; font-weight:600; line-height:1.25; text-align:left; background:var(--card); border:1px solid var(--line); border-radius:14px; color:var(--ink); touch-action:manipulation;}
+.choice:active{background:var(--accent-soft); border-color:var(--accent);}
+.choice.good{background:color-mix(in srgb,var(--good) 18%,var(--card)); border-color:var(--good);}
+.choice.bad{background:color-mix(in srgb,var(--bad) 16%,var(--card)); border-color:var(--bad);}
+.dtable .ev{font-weight:600; font-size:13px; line-height:1.25;}
+
+/* Pas de barre de défilement visible (Android) */
+*{scrollbar-width:none;}
+*::-webkit-scrollbar{display:none; width:0; height:0;}
+
+/* PWA : encarts gérés par .screen (pas de doublon sur :root) + marge sous la zone floue iOS / Dynamic Island */
+:root{padding-top:0 !important; padding-bottom:0 !important;}
+@media (display-mode: standalone){
+  #home{padding-top:calc(env(safe-area-inset-top,0px) + 22px);}
+  #drill{padding-top:calc(env(safe-area-inset-top,0px) + 22px);}
+  .weather{margin-top:calc(env(safe-area-inset-top,0px) + 18px);}
+}
+</style>
+</head>
+<body>
+
+<div id="home" class="screen active">
+  <div class="home-scroll">
+    <div class="home-top">
+      <div class="brand">History<span>Sprint</span></div>
+      <div class="top-right">
+      <button class="mode-btn" id="modeBtn" aria-pressed="false" aria-label="Changer de mode : classique (taper l'année) ou inversé (choisir l'événement)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg><span id="modeLbl">Classique</span></button>
+      <div class="best-pill" id="bestPill"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v3h3v2a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V6h3V3zm-1 5a2 2 0 0 0 2 2V8H6zm12 0h-2v2a2 2 0 0 0 2-2z"/></svg><span>Record : <b id="bestVal">—</b></span></div>
+      </div>
+    </div>
+    <div class="hero-card" id="heroCard" role="button" aria-label="Voir les statistiques">
+      <div class="hc-title" id="heroTitle">Série en cours</div>
+      <div class="hc-row">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.5 2c.6 3.6 4.5 5.4 4.5 10.2A5.5 5.5 0 0 1 11.5 18 5.5 5.5 0 0 1 6 12.5c0-2.3 1.2-3.7 2.3-4.8.2 1.8 1 2.7 2 3.1C9.7 7.8 10.6 4.4 12.5 2z" fill="#FFB23F"/><path d="M12 22a4.2 4.2 0 0 1-4.2-4.2c0-1.7 1.2-2.7 2.1-3.6.2 1.2.8 1.7 1.4 1.9-.2-1.5.2-2.7 1.3-3.8.3 2 2.6 2.9 2.6 5.5A4.2 4.2 0 0 1 12 22z" fill="#FF6B2C" transform="translate(0,-1)"/></svg>
+        <div class="hero-num num" id="streakNum">0</div>
+        <div class="hero-label" id="streakLabel" style="margin-top:12px;">jours d'affilée</div>
+      </div>
+      <div class="hc-week" id="heroWeek"></div>
+    </div>
+    <div class="setup">
+      <div class="section-label">Durée</div>
+      <div class="seg" id="durRow">
+        <div class="chip" data-v="30">30 s</div>
+        <div class="chip sel" data-v="60">60 s</div>
+        <div class="chip" data-v="120">120 s</div>
+      </div>
+      <div class="section-label">Niveau</div>
+      <div class="seg" id="lvlRow">
+        <div class="chip sel" data-v="1">Débutant</div>
+        <div class="chip" data-v="2">Interméd.</div>
+        <div class="chip" data-v="3">Avancé</div>
+        <div class="chip" data-v="4">Expert</div>
+      </div>
+      <div class="section-label" id="tablesLabel">Périodes à réviser</div>
+      <div class="tables-grid" id="tablesGrid">
+        <div class="tchip all sel" data-all="1">Toutes les périodes</div>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn-pill" id="startBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z"/></svg>Commencer</button>
+    <div class="act-row">
+      <button class="act-tile" id="challengeBtn">
+        <span class="act-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg></span>
+        <span><div class="act-t">Défi du jour</div><div class="act-s" id="challengeSub">Points faibles</div></span>
+      </button>
+      <button class="act-tile" id="statsBtn">
+        <span class="act-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
+        <span><div class="act-t">Statistiques</div><div class="act-s" id="sessCountR">0 séance</div></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="countdown" class="screen">
+  <div class="cd-num num" id="cdNum">3</div>
+</div>
+
+<div id="drill" class="screen">
+  <div class="drill-exit" id="exitBtn">‹ Quitter</div>
+  <div class="drill-top">
+    <div class="timer num" id="timerEl">30</div>
+    <div class="combo" id="comboEl">🔥 0</div>
+    <div class="timer num" id="scoreEl">0</div>
+  </div>
+  <div class="qwrap">
+    <div class="game-card hist" id="gameCard">
+      <div class="corner tl"><span class="cval" id="cornerTxt1">Antiq.</span><span class="csuit">⏳</span></div>
+      <div class="card-center">
+        <div class="question q-text" id="questionEl">…</div>
+        <div class="q-sub" id="qSub">En quelle année ?</div>
+        <div class="answer num" id="answerEl">&nbsp;</div>
+      </div>
+      <div class="corner br"><span class="cval" id="cornerTxt2">Antiq.</span><span class="csuit">⏳</span></div>
+    </div>
+  </div>
+  <div class="keypad" id="keypad"></div>
+  <div class="choices" id="choices"></div>
+</div>
+
+<div id="results" class="screen">
+  <div class="weather w-sunny" id="weatherCard">
+    <div class="w-head">
+      <div class="w-title">Séance terminée</div>
+      <div class="w-score num" id="finalScore">0</div>
+      <div class="w-record" id="finalBestNote">nouveau record</div>
+    </div>
+    <div class="w-row">
+      <div class="w-ico" id="wIco"></div>
+      <div class="w-txt"><div class="w-main" id="wMain">Beau temps</div><div class="w-sub" id="wSub"></div></div>
+    </div>
+  </div>
+  <div class="big-cc-grid">
+    <div class="big-cc good tap" role="button" tabindex="0" data-detail="correct"><div class="big-cc-v num" id="bigCorrect">0</div><div class="big-cc-l">bonnes réponses</div></div>
+    <div class="big-cc bad tap" role="button" tabindex="0" data-detail="errors"><div class="big-cc-v num" id="bigWrong">0</div><div class="big-cc-l">erreurs</div></div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card tap" role="button" tabindex="0" data-detail="rpm"><div class="stat-v" id="rpm">0</div><div class="stat-l">réponses/min</div></div>
+    <div class="stat-card tap" role="button" tabindex="0" data-detail="accuracy"><div class="stat-v" id="acc">0%</div><div class="stat-l">précision</div></div>
+    <div class="stat-card tap" role="button" tabindex="0" data-detail="time"><div class="stat-v" id="avgT">0s</div><div class="stat-l">temps moyen</div></div>
+  </div>
+  <div class="actions">
+    <button class="btn-pill" id="retryBtn"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg><span>Rejouer</span></button>
+    <button class="btn-secondary" id="viewErrorsBtn">Revoir mes erreurs <span class="r" id="errCountR">0</span></button>
+    <button class="btn-secondary" id="homeBtn">Retour à l'accueil <span class="r">›</span></button>
+  </div>
+</div>
+
+<div id="detailScreen" class="screen">
+  <div style="padding-top:calc(10px + env(safe-area-inset-top,0px)); display:flex; flex-direction:column; flex:1; min-height:0;">
+    <div class="back" id="detailBack">‹ Retour</div>
+    <h2 id="detailTitle" style="font-size:20px; margin:0 0 4px;">Détail</h2>
+    <div class="res-label" style="text-align:left;margin-bottom:10px;" id="detailSub"></div>
+    <div class="detail-scroll" id="detailBody"></div>
+  </div>
+</div>
+
+<div id="statsScreen" class="screen">
+  <div style="flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-top:calc(10px + env(safe-area-inset-top,0px));">
+    <div class="back" id="statsBack">‹ Retour</div>
+    <h2>Statistiques</h2>
+    <div class="gold-card" id="goldCard"></div>
+    <div class="month-nav">
+      <button class="mnav" id="monthPrev" aria-label="Mois précédent">‹</button>
+      <div class="month-title" id="monthTitle"></div>
+      <button class="mnav" id="monthNext" aria-label="Mois suivant">›</button>
+    </div>
+    <div class="cal-head"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+    <div class="cal" id="cal"></div>
+    <div class="m-sum" id="monthSum"></div>
+    <div style="margin-top:22px; padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));">
+      <div class="row-line"><span>Séances totales</span><span class="v" id="stTotal">0</span></div>
+      <div class="row-line"><span>Temps d'entraînement</span><span class="v" id="stTime">0 min</span></div>
+      <div class="row-line"><span>Précision moyenne</span><span class="v" id="stAcc">—</span></div>
+      <div class="row-line"><span>Meilleur score</span><span class="v" id="stBest">—</span></div>
+      <button class="guide-link" id="guideBtn">Revoir le guide des boutons</button>
+    </div>
+  </div>
+</div>
+
+<div id="tour" class="tour" aria-live="polite"><div class="tour-ring" id="tourRing"></div><div class="tour-bubble" id="tourBubble"><div class="tour-arrow" id="tourArrow"></div><div id="tourText"></div><div class="tour-foot"><button class="tour-skip" id="tourSkip">Passer</button><span class="tour-count" id="tourCount"></span><button class="tour-next" id="tourNext">Suivant</button></div></div></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<div id="daySheet" class="sheet" aria-hidden="true">
+  <div class="sheet-bg" id="dayBg"></div>
+  <div class="sheet-card" role="dialog" aria-modal="true" aria-label="Statistiques du jour">
+    <div class="sheet-grip"></div>
+    <div id="dayBody"></div>
+    <button class="day-close" id="dayClose">Fermer</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+// [année (négatif = av. J.-C.), événement, niveau 1 (célèbre) à 3 (difficile)]
+// Période déduite de l'année : A <476, M 476-1491, T 1492-1788, C 1789-1913, X 1914+
+const EVENTS=[
+[-753,"Fondation légendaire de Rome",2],
+[-490,"Bataille de Marathon",3],
+[-480,"Bataille des Thermopyles",3],
+[-431,"Début de la guerre du Péloponnèse",3],
+[-399,"Mort de Socrate",3],
+[-323,"Mort d'Alexandre le Grand",2],
+[-218,"Hannibal franchit les Alpes",2],
+[-146,"Destruction de Carthage par Rome",3],
+[-52,"Défaite de Vercingétorix à Alésia",1],
+[-49,"César franchit le Rubicon",2],
+[-44,"Assassinat de Jules César",1],
+[-31,"Bataille d'Actium",3],
+[-27,"Octave devient Auguste : début de l'Empire romain",2],
+[64,"Grand incendie de Rome sous Néron",3],
+[79,"Éruption du Vésuve : destruction de Pompéi",1],
+[313,"Édit de Milan en faveur des chrétiens",3],
+[330,"Constantinople devient capitale de l'Empire romain",3],
+[395,"Partage définitif de l'Empire romain",3],
+[476,"Chute de l'Empire romain d'Occident",1],
+[486,"Victoire de Clovis à Soissons",3],
+[496,"Baptême de Clovis",2],
+[622,"L'Hégire, début du calendrier musulman",3],
+[732,"Charles Martel arrête les Arabes à Poitiers",1],
+[800,"Couronnement de Charlemagne comme empereur",1],
+[843,"Traité de Verdun : partage de l'empire de Charlemagne",3],
+[987,"Hugues Capet devient roi de France",2],
+[1066,"Bataille d'Hastings : Guillaume conquiert l'Angleterre",1],
+[1095,"Appel à la première croisade à Clermont",2],
+[1099,"Prise de Jérusalem par les croisés",3],
+[1214,"Bataille de Bouvines",2],
+[1215,"Signature de la Grande Charte (Magna Carta)",3],
+[1270,"Mort de Saint Louis à Tunis",3],
+[1307,"Arrestation des Templiers en France",3],
+[1337,"Début de la guerre de Cent Ans",2],
+[1347,"La Peste noire arrive en Europe",3],
+[1415,"Bataille d'Azincourt",2],
+[1429,"Jeanne d'Arc délivre Orléans",1],
+[1431,"Jeanne d'Arc est brûlée à Rouen",2],
+[1453,"Prise de Constantinople par les Ottomans",1],
+[1492,"Christophe Colomb atteint l'Amérique",1],
+[1498,"Vasco de Gama atteint les Indes",3],
+[1515,"Bataille de Marignan",1],
+[1517,"Luther publie ses 95 thèses",2],
+[1519,"Magellan part pour son tour du monde",3],
+[1539,"Ordonnance de Villers-Cotterêts : le français langue du droit",3],
+[1572,"Massacre de la Saint-Barthélemy",2],
+[1598,"Édit de Nantes d'Henri IV",1],
+[1610,"Assassinat d'Henri IV",2],
+[1620,"Le Mayflower arrive en Amérique du Nord",3],
+[1643,"Louis XIV devient roi à 4 ans",2],
+[1648,"Traités de Westphalie",3],
+[1661,"Début du règne personnel de Louis XIV",2],
+[1682,"La cour de Louis XIV s'installe à Versailles",2],
+[1685,"Révocation de l'édit de Nantes",2],
+[1715,"Mort de Louis XIV",2],
+[1776,"Déclaration d'indépendance des États-Unis",1],
+[1783,"Premier vol en montgolfière avec des passagers",3],
+[1789,"Prise de la Bastille",1],
+[1789,"Déclaration des droits de l'homme et du citoyen",2],
+[1792,"Proclamation de la Première République",2],
+[1793,"Exécution de Louis XVI",1],
+[1799,"Coup d'État du 18 Brumaire",2],
+[1804,"Sacre de Napoléon Ier",1],
+[1804,"Promulgation du Code civil",2],
+[1805,"Bataille d'Austerlitz",1],
+[1812,"Campagne de Russie de Napoléon",2],
+[1815,"Bataille de Waterloo",1],
+[1830,"Début de la conquête de l'Algérie par la France",3],
+[1848,"Abolition définitive de l'esclavage en France",2],
+[1852,"Début du Second Empire",3],
+[1861,"Proclamation du royaume d'Italie",3],
+[1863,"Lincoln proclame l'émancipation des esclaves",3],
+[1865,"Fin de la guerre de Sécession",3],
+[1869,"Ouverture du canal de Suez",3],
+[1870,"Défaite de Sedan : chute de Napoléon III",2],
+[1871,"La Commune de Paris",2],
+[1871,"Proclamation de l'Empire allemand à Versailles",3],
+[1882,"Lois Jules Ferry : école laïque et obligatoire",2],
+[1889,"Exposition universelle et inauguration de la tour Eiffel",2],
+[1894,"Début de l'affaire Dreyfus",3],
+[1895,"Première projection publique des frères Lumière",2],
+[1905,"Loi de séparation des Églises et de l'État",2],
+[1912,"Naufrage du Titanic",1],
+[1914,"Début de la Première Guerre mondiale",1],
+[1916,"Bataille de Verdun",2],
+[1917,"Révolution russe d'Octobre",2],
+[1918,"Armistice du 11 novembre",1],
+[1919,"Traité de Versailles",2],
+[1929,"Krach de Wall Street",2],
+[1933,"Hitler devient chancelier d'Allemagne",2],
+[1936,"Le Front populaire arrive au pouvoir",2],
+[1939,"Début de la Seconde Guerre mondiale",1],
+[1940,"Appel du 18 juin du général de Gaulle",1],
+[1942,"Rafle du Vél' d'Hiv",3],
+[1944,"Débarquement allié en Normandie",1],
+[1944,"Libération de Paris",2],
+[1945,"Fin de la Seconde Guerre mondiale",1],
+[1948,"Création de l'État d'Israël",3],
+[1949,"Création de l'OTAN",3],
+[1954,"Début de la guerre d'Algérie",3],
+[1957,"Signature du traité de Rome",2],
+[1957,"Lancement du satellite Spoutnik",3],
+[1958,"Naissance de la Ve République",2],
+[1961,"Construction du mur de Berlin",1],
+[1962,"Indépendance de l'Algérie",2],
+[1963,"Assassinat de John F. Kennedy",2],
+[1968,"Les événements de Mai 68",1],
+[1969,"Premiers pas de l'homme sur la Lune",1],
+[1973,"Premier choc pétrolier",3],
+[1981,"Abolition de la peine de mort en France",2],
+[1986,"Catastrophe nucléaire de Tchernobyl",2],
+[1989,"Chute du mur de Berlin",1],
+[1990,"Réunification de l'Allemagne",3],
+[1991,"Dissolution de l'URSS",2],
+[1992,"Traité de Maastricht",3],
+[1998,"La France championne du monde de football",1],
+[2001,"Attentats du 11 septembre",1],
+[2002,"Passage à l'euro en France",2],
+[2019,"Incendie de Notre-Dame de Paris",2],
+[2020,"Début de la pandémie de Covid-19 et premier confinement en France",2],
+];
+
+  function eraOf(y){ return y<476?'A' : y<1492?'M' : y<1789?'T' : y<1914?'C' : 'X'; }
+  const EV=EVENTS.map(([y,l,lv])=>({y,l,lv,era:eraOf(y)}));
+  const EV_BY_LABEL={}; EV.forEach(e=>EV_BY_LABEL[e.l]=e);
+  function fmtY(y){ return y<0 ? (-y)+' av. J.-C.' : String(y); }
+  const store=()=>{ try{ return JSON.parse(localStorage.getItem('hs_data')||'{}'); }catch(e){ return {}; } };
+  const save=d=>{ try{ localStorage.setItem('hs_data', JSON.stringify(d)); }catch(e){} };
+  let data=Object.assign({sessions:[], best:0, streak:0, lastDay:null, errorStats:{}}, store());
+  if(!data.errorStats) data.errorStats={};
+  if(!data.qStats) data.qStats={};
+  // Les parties en mode inversé ne comptent pas dans les statistiques générales : on les met à part.
+  { const inv=(data.sessions||[]).filter(x=>x.mode==='inv');
+    if(inv.length){
+      data.invSessions=(data.invSessions||[]).concat(inv);
+      data.sessions=data.sessions.filter(x=>x.mode!=='inv');
+      data.best=data.sessions.reduce((m,x)=>Math.max(m,x.score||0),0);
+      data.bestInv=Math.max(data.bestInv||0, ...inv.map(x=>x.score||0));
+      save(data);
+    } }
+
+  let duration=60, level=1, mode=(data.mode==='inv'?'inv':'cls');
+  function paintMode(){
+    const btn=$('modeBtn'); btn.classList.toggle('inv', mode==='inv'); btn.setAttribute('aria-pressed', mode==='inv');
+    $('modeLbl').textContent = mode==='inv' ? 'Inversé' : 'Classique';
+  }
+  $('modeBtn').onclick=()=>{ mode = mode==='inv' ? 'cls' : 'inv'; data.mode=mode; save(data); paintMode(); refreshHome(); };
+  paintMode();
+  document.querySelectorAll('#durRow .chip').forEach(c=>c.onclick=()=>{
+    document.querySelectorAll('#durRow .chip').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); duration=+c.dataset.v;
+  });
+  document.querySelectorAll('#lvlRow .chip').forEach(c=>c.onclick=()=>{
+    document.querySelectorAll('#lvlRow .chip').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); level=+c.dataset.v;
+  });
+
+  // ---- sélection des périodes ----
+  const tablesGrid=$('tablesGrid');
+  const ERA_LIST=[['A','Antiq.'],['M','Médiév.'],['T','Moderne'],['C','XIXe'],['X','XXe+']];
+  const ERA_SHORT={}; ERA_LIST.forEach(([k,l])=>ERA_SHORT[k]=l);
+  const ALL_ERAS=ERA_LIST.map(x=>x[0]);
+  let selectedEras=ALL_ERAS.slice();
+  function resetEras(){
+    selectedEras=ALL_ERAS.slice();
+    tablesGrid.querySelectorAll('.tchip').forEach(x=>x.classList.remove('sel'));
+    tablesGrid.querySelector('.all').classList.add('sel');
+  }
+  ERA_LIST.forEach(([k,lab])=>{
+    const c=document.createElement('div'); c.className='tchip era'; c.textContent=lab; c.dataset.n=k;
+    c.onclick=()=>{
+      tablesGrid.querySelector('.all').classList.remove('sel');
+      c.classList.toggle('sel');
+      selectedEras=[...tablesGrid.querySelectorAll('.tchip:not(.all).sel')].map(x=>x.dataset.n);
+      if(!selectedEras.length) resetEras();
+    };
+    tablesGrid.appendChild(c);
+  });
+  tablesGrid.querySelector('.all').onclick=resetEras;
+
+  // ---- sons doux, chauds et ronds (Web Audio, synthétisés) ----
+  let actx=null;
+  function ctx(){ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+  function tone(freq, t0, dur, vol, type){
+    const c=ctx(); const o=c.createOscillator(); const g=c.createGain(); const lp=c.createBiquadFilter();
+    lp.type='lowpass'; lp.frequency.value=1400;
+    o.type=type||'sine'; o.frequency.value=freq;
+    o.connect(lp); lp.connect(g); g.connect(c.destination);
+    const start=c.currentTime+t0;
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(vol, start+0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, start+dur);
+    o.start(start); o.stop(start+dur+0.02);
+  }
+  let noiseBuf=null;
+  function getNoise(c){
+    if(noiseBuf) return noiseBuf;
+    const len=Math.floor(c.sampleRate*0.06);
+    const buf=c.createBuffer(1,len,c.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+    noiseBuf=buf; return buf;
+  }
+  function tap(t0, vol, cutoff){
+    const c=ctx();
+    const src=c.createBufferSource(); src.buffer=getNoise(c);
+    const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=cutoff||1000; lp.Q.value=0.5;
+    const g=c.createGain();
+    src.connect(lp); lp.connect(g); g.connect(c.destination);
+    const start=c.currentTime+t0;
+    g.gain.setValueAtTime(0,start);
+    g.gain.linearRampToValueAtTime(vol,start+0.006);
+    g.gain.exponentialRampToValueAtTime(0.001,start+0.055);
+    src.start(start); src.stop(start+0.07);
+  }
+  const sound={
+    tick:()=>tone(440,0,0.16,0.16,'sine'),
+    go:()=>{tone(523,0,0.22,0.18,'sine'); tone(659,0.05,0.28,0.14,'sine');},
+    correct:()=>{ tap(0,0.11,1300); tap(0.055,0.10,1500); },
+    wrong:()=>tone(220,0,0.22,0.14,'triangle'),
+    end:()=>{tone(523,0,0.16,0.15,'sine'); tone(659,0.1,0.16,0.13,'sine'); tone(784,0.2,0.3,0.13,'sine');},
+    key:()=>{ tap(0,0.10,950); tone(150+Math.random()*30,0,0.06,0.05,'sine'); },
+    del:()=>{ tap(0,0.09,650); tone(110,0,0.07,0.05,'sine'); }
+  };
+
+  function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
+
+  function refreshHome(){
+    $('bestVal').textContent = (mode==='inv' ? data.bestInv : data.best) || '—';
+    const n=data.sessions.length; $('sessCountR').textContent = n+(n>1?' séances':' séance');
+    { const wl=weakList().length;
+      $('challengeSub').textContent = wl ? wl+(wl>1?' événements à retravailler':' événement à retravailler') : (data.sessions.length ? 'Aucun point faible' : 'Joue d\'abord une séance');
+      $('challengeBtn').classList.toggle('is-off', !wl); }
+    $('streakNum').textContent = data.streak||0;
+    $('streakLabel').textContent = (data.streak||0)>1 ? 'jours d\'affilée' : 'jour d\'affilée';
+    // 7 derniers jours : météo du jour (même code couleur que le calendrier)
+    const wm=dayWeatherMap(), today=localDay(), JL=['D','L','M','M','J','V','S'];
+    const wk=$('heroWeek'); wk.innerHTML='';
+    for(let i=6;i>=0;i--){
+      const day=addDays(today,-i), [y,m,d]=day.split('-').map(Number);
+      const el=document.createElement('div'); el.className='hc-day'+(i===0?' today':'');
+      el.innerHTML='<i class="'+(wm[day]!==undefined?'w'+wm[day]:'')+'"></i>'+JL[new Date(y,m-1,d).getDay()];
+      wk.appendChild(el);
+    }
+    const gold=sunnyRuns().current>=7;
+    $('heroCard').classList.toggle('is-gold', gold);
+    $('heroTitle').textContent = gold ? '★ Statut Gold' : 'Série en cours';
+  }
+  $('heroCard').onclick=()=>openStats();
+  refreshHome();
+
+  let recentKeys=[];
+  function pushRecent(k){ recentKeys.push(k); if(recentKeys.length>12) recentKeys.shift(); }
+  let challengeMode=false, challengePool=[];
+
+  // Points faibles : événements ratés ou lents (6 dernières réponses de chaque événement).
+  // Un événement sort de la liste dès que ses 3 dernières réponses sont justes en moins de 5 s.
+  function weakList(){
+    const out=[], qs=data.qStats||{}, es=data.errorStats||{};
+    new Set([...Object.keys(qs), ...Object.keys(es)]).forEach(k=>{
+      const e=EV_BY_LABEL[k]; if(!e) return;
+      const h=qs[k]; let w=0;
+      if(h && h.length){
+        const last3=h.slice(-3);
+        if(last3.length>=3 && last3.every(r=>r[1]===1 && r[0]<5)) return;
+        const errs=h.filter(r=>r[1]>1).length;
+        const avg=h.reduce((t,r)=>t+r[0],0)/h.length;
+        w = errs*2 + (avg>=8 ? 1+(avg-8)/2 : 0);
+      }else if((es[k]||0)>0){ w=es[k]; }
+      if(w>0) out.push({e,w,k});
+    });
+    out.sort((x,y)=>y.w-x.w);
+    return out.slice(0,20);
+  }
+
+  // Niveau : 1 = événements très connus … 4 = les plus difficiles.
+  function levelPool(){
+    const lv = level===1?[1] : level===2?[1,2] : level===3?[2,3] : [3];
+    let p=EV.filter(e=>lv.includes(e.lv) && selectedEras.includes(e.era));
+    if(p.length<6) p=EV.filter(e=>selectedEras.includes(e.era));
+    return p;
+  }
+  function genQuestion(){
+    let e;
+    if(challengeMode){
+      const pool=challengePool, n=Math.min(4,pool.length-1), avoid=n>0?recentKeys.slice(-n):[];
+      const c=pool.filter(p=>!avoid.includes(p.k)), list=c.length?c:pool;
+      let r=Math.random()*list.reduce((t,p)=>t+p.w,0), pk=list[list.length-1];
+      for(const p of list){ r-=p.w; if(r<=0){ pk=p; break; } }
+      e=pk.e;
+    }else{
+      const pool=levelPool(), avoid=recentKeys.slice(-Math.min(12,Math.max(0,pool.length-2)));
+      const c=pool.filter(x=>!avoid.includes(x.l)), list=c.length?c:pool;
+      e=list[Math.floor(Math.random()*list.length)];
+    }
+    pushRecent(e.l);
+    return e;
+  }
+  // Mode inversé : l'année est donnée, il faut reconnaître l'événement parmi 4 propositions.
+  function makeChoices(e){
+    const others=EV.filter(x=>x.l!==e.l && x.y!==e.y)
+      .map(x=>({x, d:Math.abs(x.y-e.y)*(0.6+Math.random()*0.8)+(x.era===e.era?0:150)}))
+      .sort((p,q)=>p.d-q.d).slice(0,10).map(o=>o.x);
+    const picks=[]; while(picks.length<3 && others.length){ picks.push(others.splice(Math.floor(Math.random()*others.length),1)[0]); }
+    const all=[e,...picks];
+    for(let i=all.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; }
+    return all;
+  }
+
+  let cur, timeLeft, score, correctCount, wrongCount, combo, tickHandle, answerBuf, times=[], mistakes=[], attempts=[], corrects=[], qTries=0, qid=0, beginTs=0, lastOkTs=0;
+  let drillInv=false, lockInput=false, qStart=0;
+  const kp=$('keypad'), choicesEl=$('choices');
+
+  function startDrill(){
+    drillInv = (mode==='inv' && !challengeMode);
+    score=0; correctCount=0; wrongCount=0; combo=0; times=[]; mistakes=[]; attempts=[]; corrects=[]; qTries=0; qid=0; answerBuf=''; recentKeys=[];
+    timeLeft=duration;
+    $('timerEl').textContent=timeLeft; $('timerEl').classList.remove('warn');
+    $('scoreEl').textContent='0'; $('comboEl').classList.remove('show');
+    kp.style.display = drillInv ? 'none' : ''; choicesEl.style.display = drillInv ? 'grid' : 'none';
+    runCountdown();
+  }
+
+  function runCountdown(){
+    show('countdown');
+    let n=3; $('cdNum').textContent=n; sound.tick();
+    const h=setInterval(()=>{
+      n--;
+      if(n>0){ $('cdNum').textContent=n; sound.tick(); }
+      else{ clearInterval(h); sound.go(); beginDrill(); }
+    },700);
+  }
+
+  function beginDrill(){
+    beginTs=performance.now(); lastOkTs=beginTs;
+    show('drill'); nextQuestion();
+    tickHandle=setInterval(()=>{
+      timeLeft--; $('timerEl').textContent=timeLeft;
+      if(timeLeft<=10) $('timerEl').classList.add('warn');
+      if(timeLeft<=0){ clearInterval(tickHandle); endDrill(); }
+    },1000);
+  }
+
+  function renderChoices(){
+    choicesEl.innerHTML='';
+    cur.opts.forEach(o=>{
+      const b=document.createElement('button'); b.className='choice'; b.textContent=o.l; b.dataset.l=o.l;
+      b.onclick=()=>{
+        if(lockInput) return; sound.key();
+        const ok=(o.l===cur.l);
+        b.classList.add(ok?'good':'bad');
+        if(!ok) [...choicesEl.children].forEach(x=>{ if(x.dataset.l===cur.l) x.classList.add('good'); });
+        judge(ok, o.l.length>30 ? o.l.slice(0,29)+'…' : o.l, performance.now());
+      };
+      choicesEl.appendChild(b);
+    });
+  }
+
+  function nextQuestion(){
+    cur=genQuestion(); answerBuf=''; qTries=0; qid++; lockInput=false;
+    $('cornerTxt1').textContent=ERA_SHORT[cur.era]; $('cornerTxt2').textContent=ERA_SHORT[cur.era];
+    const a=$('answerEl'), q=$('questionEl');
+    if(drillInv){
+      cur.opts=makeChoices(cur);
+      q.className='question num q-year'; q.textContent=fmtY(cur.y);
+      $('qSub').textContent='Que s’est-il passé cette année-là ?';
+      a.style.display='none'; renderChoices();
+    }else{
+      q.className='question q-text'; q.textContent=cur.l;
+      $('qSub').textContent = cur.y<0 ? 'En quelle année avant J.-C. ?' : 'En quelle année ?';
+      a.style.display=''; a.textContent=' '; a.className='answer num';
+    }
+    qStart=performance.now();
+  }
+
+  function vibrate(ms){ if(navigator.vibrate) navigator.vibrate(ms); }
+  function pulseCard(cls){
+    const c=$('gameCard');
+    c.classList.remove('pop-good','pop-bad');
+    void c.offsetWidth;
+    c.classList.add(cls);
+  }
+
+  function submit(){
+    const val=parseInt(answerBuf||'NaN',10);
+    judge(val===Math.abs(cur.y), isNaN(val)?'—':(val+(cur.y<0?' av. J.-C.':'')), performance.now());
+  }
+  // Temps d'une réponse = durée écoulée depuis la réponse précédente : réflexion et courte pause comprises.
+  function judge(isOk, given, now){
+    const dt=(now-lastOkTs)/1000, lab=cur.l, yr=fmtY(cur.y);
+    qTries=1; lockInput=true;
+    attempts.push({id:qid, q:lab, ok:isOk});
+    const hist=ok=>{ const h=(data.qStats[lab]=data.qStats[lab]||[]); h.push([Math.round(dt*100)/100, ok?1:2]); if(h.length>6) h.shift(); };
+    if(isOk){
+      corrects.push({q:lab, ans:yr, y:yr, dt, tries:1, at:(now-beginTs)/1000}); lastOkTs=now;
+      correctCount++; combo++; times.push(dt); score=correctCount;
+      if(!drillInv) hist(true);
+      if(!drillInv) $('answerEl').classList.add('flash-good');
+      vibrate(15); sound.correct(); pulseCard('pop-good');
+      $('comboEl').classList.add('show'); $('comboEl').textContent='🔥 '+combo;
+      $('scoreEl').textContent=score;
+      setTimeout(nextQuestion, 260);
+    }else{
+      wrongCount++; combo=0;
+      mistakes.push({q:lab, ans:yr, given});
+      if(!drillInv){ data.errorStats[lab]=(data.errorStats[lab]||0)+1; hist(false); }
+      vibrate([10,30,10]); sound.wrong(); pulseCard('pop-bad');
+      if(!drillInv){ const a=$('answerEl'); a.textContent=yr; a.className='answer num reveal'; }   // on montre la bonne année
+      $('comboEl').classList.remove('show');
+      $('scoreEl').textContent=score;
+      setTimeout(()=>{ lastOkTs=performance.now(); nextQuestion(); }, 1300);
+    }
+  }
+
+  const keys=['7','8','9','4','5','6','1','2','3','⌫','0','✓'];
+  function pressKey(k){
+    if(lockInput || drillInv) return;
+    if(k==='⌫'){ answerBuf=answerBuf.slice(0,-1); sound.del(); }
+    else if(k==='✓'){ sound.key(); if(answerBuf.length) submit(); return; }
+    else { if(answerBuf.length<4){ answerBuf+=k; sound.key(); } }
+    $('answerEl').textContent = answerBuf.length? answerBuf : ' ';
+    $('answerEl').className='answer num';
+    if(k!=='⌫' && k!=='✓' && answerBuf.length && answerBuf.length>=String(Math.abs(cur.y)).length) submit();
+  }
+  keys.forEach(k=>{
+    const b=document.createElement('button'); b.className='key'; b.textContent=k;
+    let lastFire=0, down=false;
+    const press=(ev)=>{ if(ev) ev.preventDefault(); down=true; b.classList.add('pressed'); };
+    const release=(ev)=>{
+      if(ev) ev.preventDefault();
+      b.classList.remove('pressed');
+      if(!down) return; down=false;
+      const now=performance.now();
+      if(now-lastFire<150) return; // évite les doubles frappes (doigt + clic fantôme)
+      lastFire=now;
+      pressKey(k);
+    };
+    const cancel=()=>{ down=false; b.classList.remove('pressed'); };
+    b.addEventListener('pointerdown', press, {passive:false});
+    b.addEventListener('pointerup', release, {passive:false});
+    b.addEventListener('pointercancel', cancel);
+    b.addEventListener('pointerleave', cancel);
+    b.addEventListener('click', ev=>ev.preventDefault());
+    kp.appendChild(b);
+  });
+  // Clavier physique (ordinateur)
+  document.addEventListener('keydown',e=>{
+    if(!$('drill').classList.contains('active')) return;
+    if(/^[0-9]$/.test(e.key)) pressKey(e.key); else if(e.key==='Backspace') pressKey('⌫'); else if(e.key==='Enter') pressKey('✓');
+  });
+
+  // ---- Météo de la séance ----
+  const SUN='<circle cx="32" cy="32" r="12" fill="#FFD60A"/><g stroke="#FFD60A" stroke-width="3.5" stroke-linecap="round"><path d="M32 8v6M32 50v6M8 32h6M50 32h6M15 15l4.2 4.2M44.8 44.8L49 49M49 15l-4.2 4.2M19.2 44.8L15 49"/></g>';
+  const CLOUD='M18 46a10 10 0 0 1-1-19.9 14 14 0 0 1 27.2 2.9A8.5 8.5 0 0 1 45.5 46H18z';
+  const WEATHER=[
+    {cls:'w-rain',   label:'Pluvieux',
+     svg:`<svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(0,-6)"><path d="${CLOUD}" fill="#D3DBE6"/></g><g stroke="#BBD9FF" stroke-width="3.5" stroke-linecap="round"><path d="M22 46l-3 7M32 46l-3 7M42 46l-3 7"/></g></svg>`},
+    {cls:'w-cloudy', label:'Très couvert',
+     svg:`<svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(14,-4) scale(.8)"><path d="${CLOUD}" fill="#AEB9C7"/></g><g transform="translate(-2,6)"><path d="${CLOUD}" fill="#F1F4F8"/></g></svg>`},
+    {cls:'w-partly', label:'Partiellement couvert',
+     svg:`<svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(-3,-3) scale(.72)">${SUN}</g><g transform="translate(7,9) scale(.9)"><path d="${CLOUD}" fill="#FFFFFF"/></g></svg>`},
+    {cls:'w-sunny',  label:'Beau temps',
+     svg:`<svg viewBox="0 0 64 64" aria-hidden="true">${SUN}</svg>`}
+  ];
+  // Indice 0 = pluvieux … 3 = beau temps.
+  // La précision décide : beau temps = 100 % (zéro erreur). Un rythme trop lent plafonne le résultat.
+  function weatherIndex(acc, rpm, answered){
+    if(!answered) return 0;
+    const byAcc = acc>=100?3 : (acc>=90?2 : (acc>=75?1:0));
+    const cap   = rpm>=10?3 : (rpm>=6?2 : 1);
+    return Math.min(byAcc, cap);
+  }
+  function renderWeather(acc, rpm, answered){
+    const w=WEATHER[weatherIndex(acc,rpm,answered)];
+    $('weatherCard').className='weather '+w.cls;
+    $('wIco').innerHTML=w.svg;
+    $('wMain').textContent=w.label;
+    $('wSub').textContent=acc+' % de précision · '+rpm+' rép./min';
+  }
+
+  function endDrill(){
+    const total=correctCount+wrongCount;
+    const acc = total? Math.round(100*correctCount/total):0;
+    const rpm = Math.round(correctCount / (duration/60));
+    const avgT = times.length? (times.reduce((a,b)=>a+b,0)/times.length):0;
+    const inv = drillInv;                                   // mode inversé : record et statistiques à part
+    const isBest = score > (inv ? (data.bestInv||0) : data.best);
+    if(isBest){ if(inv) data.bestInv=score; else data.best=score; }
+    const today=localDay();
+    if(data.lastDay!==today){
+      const y=addDays(today,-1);
+      data.streak = (data.lastDay===y)? (data.streak||0)+1 : 1;
+      data.lastDay=today;
+    }
+    if(!inv){
+      data.sessions.push({d:today, score, acc, rpm, dur:duration, ok:correctCount, err:wrongCount});
+      if(data.sessions.length>1500) data.sessions=data.sessions.slice(-1500);
+      data.goldBest=Math.max(data.goldBest||0, sunnyRuns().best);
+    }else{
+      // les parties inversées ne sont pas mélangées aux statistiques générales (calendrier, jour, Gold, totaux)
+      data.invSessions=(data.invSessions||[]); data.invSessions.push({d:today, score, acc, rpm, dur:duration, ok:correctCount, err:wrongCount});
+      if(data.invSessions.length>300) data.invSessions=data.invSessions.slice(-300);
+    }
+    save(data);
+    sound.end();
+
+    $('finalScore').textContent=score;
+    $('finalBestNote').textContent = inv ? (isBest? '🏆 nouveau record inversé' : 'record inversé : '+(data.bestInv||0)) : (isBest? '🏆 nouveau record personnel' : 'record personnel : '+data.best);
+    $('finalBestNote').classList.toggle('is-best', isBest);
+    $('bigCorrect').textContent=correctCount;
+    $('bigWrong').textContent=wrongCount;
+    $('errCountR').textContent = mistakes.length + (mistakes.length>1?' erreurs':' erreur');
+    $('rpm').textContent=rpm; $('acc').textContent=acc+'%'; $('avgT').textContent=avgT.toFixed(1)+'s';
+    renderWeather(acc, rpm, total>0);
+    refreshHome();
+    show('results');
+  }
+
+  function plural(n,s,p){ return n+' '+(n>1?p:s); }
+  function fmtT(t){ return t.toFixed(1).replace('.',',')+' s'; }
+
+
+  // ---- Graphique du rythme (SVG) : cumul + tendance, zones 24/30/40, ligne de fin ----
+  function drawRpmChart(D){
+    const svg=$('rcSvg'), tip=$('rcTip'), wrap=$('rcWrap');
+    if(!svg) return;
+    const {ser,duration,overall}=D;
+    const W=350,H=210, L=30,R=34,T=10,B=24, pw=W-L-R, ph=H-T-B;
+    const stable=p=>p.i>=3 && p.t>=5;           // début de séance atténué
+    const vals=[overall]; ser.forEach(p=>{ if(stable(p)) vals.push(p.cum); if(p.trend!==null) vals.push(p.trend); });
+    let lo=Math.max(0,Math.floor((Math.min(...vals)-2)/5)*5), hi=Math.ceil((Math.max(...vals)+2)/5)*5;
+    if(hi-lo<15){ hi=lo+15; }
+    const X=t=>L+pw*Math.min(1,t/duration), Y=v=>T+ph*(1-(v-lo)/(hi-lo));
+    const f=n=>n.toFixed(1);
+    let g='';
+    // zones de couleur (mêmes paliers que les tableaux)
+    [[0,7,'z0'],[7,10,'z1'],[10,14,'z2'],[14,999,'z3']].forEach(([a,b,c])=>{
+      const y1=Y(Math.min(b,hi)), y2=Y(Math.max(a,lo));
+      if(Math.min(b,hi)>Math.max(a,lo)) g+=`<rect class="rc-zone ${c}" x="${L}" y="${f(y1)}" width="${pw}" height="${f(y2-y1)}"/>`;
+    });
+    // grille + graduations Y
+    for(let v=lo; v<=hi+0.001; v+=5){
+      g+=`<line class="rc-grid" x1="${L}" x2="${L+pw}" y1="${f(Y(v))}" y2="${f(Y(v))}"/><text class="rc-tick" x="${L-6}" y="${f(Y(v)+3.5)}" text-anchor="end">${v}</text>`;
+    }
+    // graduations X (secondes)
+    const step = duration<=30?10 : (duration<=60?15:30);
+    for(let t=0;t<=duration;t+=step){
+      g+=`<text class="rc-tick" x="${f(X(t))}" y="${H-7}" text-anchor="${t===0?'start':(t===duration?'end':'middle')}">${t} s</text>`;
+    }
+    // résultat final (pointillés fins) + libellé à droite
+    g+=`<line class="rc-final" x1="${L}" x2="${L+pw}" y1="${f(Y(overall))}" y2="${f(Y(overall))}"/>`;
+    // courbe du cumul : début atténué, puis courbe pleine
+    const idx=ser.findIndex(stable);
+    const path=arr=>arr.map((p,k)=>(k?'L':'M')+f(X(p.t))+' '+f(Y(p.cum))).join(' ');
+    if(idx<0){ g+=`<path class="rc-line rc-l1 rc-early" d="${path(ser)}"/>`; }
+    else{
+      if(idx>0) g+=`<path class="rc-line rc-l1 rc-early" d="${path(ser.slice(0,idx+1))}"/>`;
+      if(ser.length-idx>1) g+=`<path class="rc-line rc-l1" d="${path(ser.slice(idx))}"/>`;
+    }
+    // tendance
+    const tr=ser.filter(p=>p.trend!==null);
+    if(tr.length>1) g+=`<path class="rc-line rc-l2" d="${tr.map((p,k)=>(k?'L':'M')+f(X(p.t))+' '+f(Y(p.trend))).join(' ')}"/>`;
+    // point final du cumul + libellé direct
+    const last=ser[ser.length-1];
+    g+=`<circle class="rc-dot" cx="${f(X(last.t))}" cy="${f(Y(last.cum))}" r="4" fill="var(--s1)"/>`;
+    g+=`<text class="rc-flabel" x="${W-R+6}" y="${f(Y(overall)+3.5)}">${overall}</text>`;
+    // couche interactive
+    g+=`<line class="rc-cross" id="rcCross" y1="${T}" y2="${T+ph}" x1="0" x2="0" style="display:none"/><circle class="rc-dot" id="rcD1" r="4" fill="var(--s1)" style="display:none"/><circle class="rc-dot" id="rcD2" r="4" fill="var(--s2)" style="display:none"/>`;
+    g+=`<rect id="rcHit" x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent"/>`;
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.innerHTML=g;
+
+    const cross=$('rcCross'), d1=$('rcD1'), d2=$('rcD2');
+    function hide(){ cross.style.display=d1.style.display=d2.style.display='none'; tip.style.display='none'; }
+    function show_(clientX){
+      const r=svg.getBoundingClientRect(), vx=(clientX-r.left)/r.width*W;
+      let best=ser[0], bd=1e9; ser.forEach(p=>{ const d=Math.abs(X(p.t)-vx); if(d<bd){bd=d; best=p;} });
+      const px=X(best.t);
+      cross.setAttribute('x1',f(px)); cross.setAttribute('x2',f(px)); cross.style.display='';
+      d1.setAttribute('cx',f(px)); d1.setAttribute('cy',f(Y(best.cum))); d1.style.display='';
+      if(best.trend!==null){ d2.setAttribute('cx',f(px)); d2.setAttribute('cy',f(Y(best.trend))); d2.style.display=''; } else d2.style.display='none';
+      tip.innerHTML='';
+      const t0=document.createElement('div'); t0.className='t0'; t0.textContent='N° '+best.i+' · '+best.y+' '; 
+      const sp=document.createElement('span'); sp.textContent='à '+best.t.toFixed(1).replace('.',',')+' s'; t0.appendChild(sp); tip.appendChild(t0);
+      const row=(cls,label,v)=>{ const e=document.createElement('div'); e.className='row'; const a=document.createElement('span'); a.className='k '+cls; a.textContent=label; const b=document.createElement('b'); b.textContent=v; e.appendChild(a); e.appendChild(b); tip.appendChild(e); };
+      row('k1','Cumul',Math.round(best.cum)+'/min');
+      if(best.trend!==null) row('k2','Tendance',Math.round(best.trend)+'/min');
+      tip.style.display='block';
+      const wr=wrap.getBoundingClientRect(), pxPage=px/W*r.width+(r.left-wr.left);
+      const tw=tip.offsetWidth; let left=pxPage+12; if(left+tw>wr.width) left=pxPage-tw-12; tip.style.left=Math.max(0,left)+'px';
+    }
+    const hit=$('rcHit');
+    hit.addEventListener('pointerdown', e=>show_(e.clientX));
+    hit.addEventListener('pointermove', e=>show_(e.clientX));
+    hit.addEventListener('pointerleave', e=>{ if(e.pointerType==='mouse') hide(); });
+    document.getElementById('detailBody').addEventListener('scroll', hide, {passive:true});
+  }
+  let rpmChartData=null;
+  function openDetail(type){
+    rpmChartData=null;
+    const body=$('detailBody'); let html='', title='', sub='';
+    if(type==='correct'){
+      title='Bonnes réponses';
+      sub=plural(corrects.length,'bonne réponse','bonnes réponses')+' cette séance';
+      html = corrects.length ? `<table class="dtable"><thead><tr><th>N°</th><th>Événement</th><th class="r">Année</th></tr></thead><tbody>`
+        + corrects.map((c,i)=>`<tr><td class="n">${i+1}</td><td class="ev">${c.q}</td><td class="m r ok">${c.ans}</td></tr>`).join('')
+        + `</tbody></table>` : '<div class="err-empty">Aucune bonne réponse cette séance</div>';
+    }else if(type==='errors'){
+      title='Erreurs';
+      sub=plural(mistakes.length,'erreur','erreurs')+' cette séance';
+      html = mistakes.length ? `<table class="dtable"><thead><tr><th>N°</th><th>Événement</th><th class="r">Ta réponse</th><th class="r">Année</th></tr></thead><tbody>`
+        + mistakes.map((m,i)=>`<tr><td class="n">${i+1}</td><td class="ev">${m.q}</td><td class="m r ko">${m.given}</td><td class="m r ok">${m.ans}</td></tr>`).join('')
+        + `</tbody></table>` : '<div class="err-empty">Aucune erreur — sans faute 🎉</div>';
+    }else if(type==='accuracy'){
+      title='Précision';
+      // Une ligne par calcul : précision = 1 bonne réponse / nombre d'essais (100 % du premier coup)
+      const groups=[];
+      attempts.forEach(a=>{
+        let g=groups[groups.length-1];
+        if(!g || g.id!==a.id){ g={id:a.id, q:a.q, tries:0, ok:false}; groups.push(g); }
+        g.tries++; if(a.ok) g.ok=true;
+      });
+      const rows=groups.map((g,i)=>{
+        const pct=g.ok? Math.round(100/g.tries) : 0;
+        const cls=pct===100?'p-top':(pct>=50?'p-mid':'p-low');
+        const icon=pct===100?'✓':(pct>=50?'~':'✗');
+        return `<tr class="${cls}"><td class="n">${i+1}</td><td class="ev">${g.q}</td><td class="r">${g.tries}</td><td class="r"><span class="pill ${cls}">${icon} ${pct}%</span></td></tr>`;
+      });
+      const okAtt=attempts.filter(a=>a.ok).length;
+      const finalPct = attempts.length? Math.round(100*okAtt/attempts.length):0;
+      sub=groups.length? ('Précision globale : '+finalPct+'% · 100 % = bonne réponse du premier coup') : '';
+      html = groups.length ? `<div class="legend"><span class="l-top">100 % du premier coup</span><span class="l-mid">50–99 % au 2ᵉ essai</span><span class="l-low">moins de 50 %</span></div><table class="dtable"><thead><tr><th>N°</th><th>Événement</th><th class="r">Essais</th><th class="r">Précision</th></tr></thead><tbody>${rows.join('')}</tbody></table>`
+        : '<div class="err-empty">Aucune réponse donnée cette séance</div>';
+    }else if(type==='rpm'){
+      title='Réponses par minute';
+      // Paliers : 40 / 30 / 24 rép./min (équivalents à 1,5 s / 2 s / 2,5 s par réponse)
+      const rpmCls = r => r>=14 ? 'p-fast' : (r>=10 ? 'p-top' : (r>=7 ? 'p-mid' : 'p-low'));
+      const rpmIcon = r => r>=14 ? '⚡' : (r>=10 ? '✓' : (r>=7 ? '~' : '🐢'));
+      const overall = Math.round(corrects.length/(duration/60));
+      sub = corrects.length ? ('Rythme moyen de la séance : '+overall+' rép./min') : '';
+      if(!corrects.length){ html='<div class="err-empty">Aucune bonne réponse cette séance</div>'; }
+      else{
+        // Cumul : n bonnes réponses ÷ temps écoulé. Tendance : moyenne glissante sur les 3 dernières réponses.
+        const WIN=3;
+        const ser=corrects.map((c,i)=>({
+          i:i+1, q:c.q, y:c.y, t:c.at,
+          cum:(i+1)*60/Math.max(c.at,0.1),
+          trend: i+1>=WIN ? WIN*60/Math.max(c.at-(i+1-WIN>0? corrects[i-WIN].at : 0),0.1) : null
+        }));
+        rpmChartData={ser, duration, overall};
+        html = `<div class="rc-legend"><span class="k1">Cumul</span>${ser.some(p=>p.trend!==null)?'<span class="k2">Tendance (3 dernières réponses)</span>':''}</div>`
+          + `<div class="rc-wrap" id="rcWrap"><svg id="rcSvg" role="img" aria-label="Courbe du rythme cumulé et de la tendance au cours de la séance"></svg><div class="rc-tip" id="rcTip"></div></div>`
+          + `<div class="legend" style="margin-top:6px;"><span class="l-fast">⚡ 14 et plus</span><span class="l-top">10 à 14</span><span class="l-mid">7 à 10</span><span class="l-low">moins de 7</span></div>`
+          + `<div class="note"><b>Cumul</b> : ta moyenne depuis le début de la séance. <b>Tendance</b> : ton rythme sur les 3 dernières réponses, pour voir si tu accélères ou si tu faiblis. ${ser.length<WIN?'La tendance apparaît à partir de 3 réponses. ':''}Les premières secondes, trop instables, sont atténuées. Touche la courbe pour lire une réponse.</div>`
+          + `<details class="rc-details"><summary>Voir le tableau détaillé</summary><table class="dtable"><thead><tr><th>N°</th><th>Événement</th><th class="r">Cumul</th><th class="r">Tendance</th></tr></thead><tbody>`
+          + ser.map(p=>{ const r=Math.round(p.cum), cls=rpmCls(r);
+              return `<tr class="${cls}"><td class="n">${p.i}</td><td class="ev">${p.q}</td><td class="m r">${r}/min</td><td class="m r">${p.trend===null?'—':Math.round(p.trend)+'/min'}</td></tr>`; }).join('')
+          + `<tr><td class="n"></td><td class="m"><b>Fin (${duration} s)</b></td><td class="m r"><b>${overall}/min</b></td><td class="r"></td></tr>`
+          + `</tbody></table></details>`;
+      }
+    }else if(type==='time'){
+      title='Temps par réponse';
+      const avg = corrects.length? corrects.reduce((s,c)=>s+c.dt,0)/corrects.length : 0;
+      // Paliers de vitesse (identiques pour tous les niveaux)
+      const speedCls = t => t<4 ? 'p-fast' : (t<6 ? 'p-top' : (t<9 ? 'p-mid' : 'p-low'));
+      const speedIcon = t => t<4 ? '⚡' : (t<6 ? '✓' : (t<9 ? '~' : '🐢'));
+      sub=corrects.length? ('Temps moyen : '+fmtT(avg)+' par réponse juste') : '';
+      html = corrects.length
+        ? `<div class="legend"><span class="l-fast">⚡ éclair : moins de 4 s</span><span class="l-top">4 à 6 s</span><span class="l-mid">6 à 9 s</span><span class="l-low">9 s et plus</span></div>`
+          + `<div class="note">Temps écoulé depuis ta bonne réponse précédente (réflexion, essais ratés et courte pause comprise) : 60 ÷ temps moyen donne ton nombre de réponses par minute.</div>`
+          + `<table class="dtable"><thead><tr><th>N°</th><th>Événement</th><th class="r">Essais</th><th class="r">Temps</th></tr></thead><tbody>`
+          + corrects.map((c,i)=>{ const cls=speedCls(c.dt); return `<tr class="${cls}"><td class="n">${i+1}</td><td class="ev">${c.q}</td><td class="r">${c.tries}</td><td class="r"><span class="pill ${cls}">${speedIcon(c.dt)} ${fmtT(c.dt)}</span></td></tr>`; }).join('')
+          + `</tbody></table>`
+        : '<div class="err-empty">Aucune réponse validée cette séance</div>';
+    }
+    $('detailTitle').textContent=title; $('detailSub').textContent=sub;
+    body.innerHTML=html; body.scrollTop=0;
+    if(type==='rpm' && rpmChartData) drawRpmChart(rpmChartData);
+    show('detailScreen');
+  }
+  document.querySelectorAll('#results .tap').forEach(el=>{
+    el.addEventListener('click', ()=>openDetail(el.dataset.detail));
+  });
+  $('viewErrorsBtn').onclick=()=>openDetail('errors');
+  $('detailBack').onclick=()=>show('results');
+
+  function exitToHome(){
+    clearInterval(tickHandle);
+    show('home');
+  }
+  $('exitBtn').addEventListener('pointerdown', e=>{ e.preventDefault(); exitToHome(); });
+  $('exitBtn').addEventListener('click', e=>e.preventDefault());
+
+  $('startBtn').onclick=()=>{ challengeMode=false; startDrill(); };
+  $('retryBtn').onclick=startDrill;
+  let toastH=null;
+  function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastH); toastH=setTimeout(()=>t.classList.remove('show'),3800); }
+  $('challengeBtn').onclick=()=>{
+    challengePool=weakList();
+    if(!challengePool.length){
+      toast(data.sessions.length ? 'Aucun point faible pour le moment, bravo ! Le défi se remplit avec tes erreurs et tes événements les plus lents.' : 'Joue quelques séances : le défi se construit à partir de tes erreurs et de tes événements les plus lents.');
+      return;
+    }
+    level=2; duration=60; challengeMode=true; startDrill();
+  };
+  $('homeBtn').onclick=()=>show('home');
+  $('statsBtn').onclick=openStats;
+  $('statsBack').onclick=()=>show('home');
+
+  // ---- Statistiques mensuelles ----
+  const MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function localDay(d){ d=d||new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  function addDays(day,n){ const [y,m,d]=day.split('-').map(Number); return localDay(new Date(y,m-1,d+n)); }
+  // Météo d'une journée = la meilleure séance du jour.
+  function dayWeatherMap(){
+    const m={};
+    data.sessions.forEach(s=>{
+      const w=weatherIndex(s.acc, s.rpm, true);
+      if(m[s.d]===undefined || w>m[s.d]) m[s.d]=w;
+    });
+    return m;
+  }
+  // Séries de jours consécutifs en beau temps (indice 3).
+  function sunnyRuns(){
+    const wm=dayWeatherMap();
+    const days=Object.keys(wm).filter(d=>wm[d]===3).sort();
+    const runs=[]; let cur=[];
+    days.forEach(d=>{
+      if(cur.length && addDays(cur[cur.length-1],1)===d) cur.push(d); else { if(cur.length) runs.push(cur); cur=[d]; }
+    });
+    if(cur.length) runs.push(cur);
+    const today=localDay(), yest=addDays(today,-1);
+    const last=runs.length? runs[runs.length-1]:null;
+    const lastEnd=last? last[last.length-1]:null;
+    const current = (last && (lastEnd===today || lastEnd===yest)) ? last.length : 0;
+    const best = runs.reduce((a,r)=>Math.max(a,r.length),0);
+    const goldDays=new Set(); runs.forEach(r=>{ if(r.length>=7) r.forEach(d=>goldDays.add(d)); });
+    return {current, best, goldDays};
+  }
+  const now0=new Date(); let viewY=now0.getFullYear(), viewM=now0.getMonth();
+
+  function renderGold(){
+    const r=sunnyRuns(), best=Math.max(r.best, data.goldBest||0);
+    const card=$('goldCard'); const gold=r.current>=7;
+    card.classList.toggle('is-gold', gold);
+    let t,sub,on;
+    if(gold){ t='★ Statut Gold'; sub=r.current+' jours de beau temps d\'affilée. Continue !'; on=7; }
+    else if(best>=7){ t='★ Gold déjà obtenu'; sub='Série en cours : '+r.current+' / 7 · record : '+best+' jours'; on=r.current; }
+    else { t='Statut Gold'; sub=r.current+' / 7 jours de beau temps d\'affilée'; on=r.current; }
+    card.innerHTML='<div class="g-t">'+t+'</div><div class="g-s">'+sub+'</div><div class="gold-dots">'+
+      [...Array(7)].map((_,i)=>'<i class="'+(i<on?'on':'')+'"></i>').join('')+'</div>';
+  }
+
+  // ---- Statistiques d'une journée ----
+  const WDAYS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  function sessOk(s){ return s.ok!==undefined ? s.ok : (s.score||0); }
+  // Séances anciennes (sans compteur d'erreurs) : estimation à partir du score et de la précision.
+  function sessErr(s){ return s.err!==undefined ? s.err : (s.acc>0 ? Math.round((s.score||0)*(100-s.acc)/s.acc) : 0); }
+  function dayStats(day){
+    const L=data.sessions.filter(s=>s.d===day);
+    if(!L.length) return null;
+    const ok=L.reduce((a,s)=>a+sessOk(s),0), err=L.reduce((a,s)=>a+sessErr(s),0);
+    return { n:L.length, best:Math.max(...L.map(s=>s.score||0)), ok, err, acc:(ok+err)>0? Math.round(100*ok/(ok+err)) : null };
+  }
+  function closeDay(){ $('daySheet').classList.remove('open'); $('daySheet').setAttribute('aria-hidden','true'); }
+  function openDay(day){
+    const [y,m,d]=day.split('-').map(Number);
+    let title=WDAYS[new Date(y,m-1,d).getDay()]+' '+d+' '+MONTHS[m-1]+(y!==new Date().getFullYear()?' '+y:''); title=title.charAt(0).toUpperCase()+title.slice(1);
+    const st=dayStats(day), body=$('dayBody'); body.innerHTML='';
+    const el=(tag,cls,txt)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!==undefined) e.textContent=txt; return e; };
+    if(!st){
+      const h=el('div','res-label','');  h.style.cssText='text-align:left;font-size:17px;font-weight:700;color:var(--ink);margin:6px 0 0;'; h.textContent=title;
+      body.appendChild(h); body.appendChild(el('div','day-empty','Aucune séance ce jour-là.'));
+    }else{
+      const w=WEATHER[dayWeatherMap()[day]];
+      const card=el('div','weather '+w.cls); card.style.marginTop='0';
+      const head=el('div','w-head'); const t=el('div','w-title',title); t.style.cssText='font-size:15px;'; head.appendChild(t); card.appendChild(head);
+      const row=el('div','w-row'); const ico=el('div','w-ico'); ico.innerHTML=w.svg; row.appendChild(ico);
+      const tx=el('div',''); tx.appendChild(el('div','w-main',w.label)); tx.appendChild(el('div','w-sub','Météo de la meilleure séance du jour')); row.appendChild(tx);
+      card.appendChild(row); body.appendChild(card);
+      const grid=el('div','day-grid');
+      const tile=(v,l)=>{ const c=el('div','stat-card'); c.appendChild(el('div','stat-v num',v)); c.appendChild(el('div','stat-l',l)); grid.appendChild(c); };
+      tile(st.best+(st.best>0 && st.best===data.best?' ★':''), st.best>0 && st.best===data.best ? 'record du jour (record absolu)' : 'record du jour');
+      tile(st.n, st.n>1?'séances':'séance');
+      tile(st.err, st.err>1?'erreurs':'erreur');
+      tile(st.acc===null?'—':st.acc+'%', 'précision');
+      body.appendChild(grid);
+    }
+    $('daySheet').classList.add('open'); $('daySheet').setAttribute('aria-hidden','false');
+  }
+  $('dayBg').onclick=closeDay; $('dayClose').onclick=closeDay;
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDay(); });
+
+  function renderMonth(){
+    const wm=dayWeatherMap(), gd=sunnyRuns().goldDays, today=localDay();
+    const first=new Date(viewY,viewM,1), nDays=new Date(viewY,viewM+1,0).getDate();
+    const lead=(first.getDay()+6)%7; // lundi = 0
+    $('monthTitle').textContent=MONTHS[viewM]+' '+viewY;
+    $('monthNext').disabled = (viewY===now0.getFullYear() && viewM===now0.getMonth());
+    const cal=$('cal'); cal.innerHTML='';
+    for(let i=0;i<lead;i++){ const b=document.createElement('div'); b.className='cal-cell blank'; cal.appendChild(b); }
+    const counts=[0,0,0,0]; let played=0;
+    for(let d=1; d<=nDays; d++){
+      const key=viewY+'-'+pad(viewM+1)+'-'+pad(d);
+      const c=document.createElement('div'); c.className='cal-cell';
+      if(key<=today){ c.classList.add('tappable'); c.setAttribute('role','button'); c.tabIndex=0; c.onclick=()=>openDay(key); c.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openDay(key); } }; }
+      c.innerHTML='<span class="dn">'+d+'</span>';
+      if(key>today) c.classList.add('future');
+      if(key===today) c.classList.add('today');
+      if(wm[key]!==undefined){
+        const w=WEATHER[wm[key]]; c.classList.add(w.cls); c.insertAdjacentHTML('beforeend', w.svg);
+        c.setAttribute('aria-label', d+' '+MONTHS[viewM]+' : '+w.label);
+        counts[wm[key]]++; played++;
+        if(gd.has(key)) c.classList.add('gold');
+      }
+      cal.appendChild(c);
+    }
+    const sum=$('monthSum');
+    sum.innerHTML='<span class="s3">Beau temps : <b>'+counts[3]+'</b></span><span class="s2">Partiellement couvert : <b>'+counts[2]+'</b></span>'+
+      '<span class="s1">Très couvert : <b>'+counts[1]+'</b></span><span class="s0">Pluvieux : <b>'+counts[0]+'</b></span>'+
+      '<span style="grid-column:1/-1;">Jours d\'entraînement ce mois-ci : <b>'+played+' / '+nDays+'</b></span>';
+  }
+  $('monthPrev').onclick=()=>{ viewM--; if(viewM<0){viewM=11; viewY--;} renderMonth(); };
+  $('monthNext').onclick=()=>{ viewM++; if(viewM>11){viewM=0; viewY++;} renderMonth(); };
+
+  function openStats(){
+    const n=new Date(); viewY=n.getFullYear(); viewM=n.getMonth();
+    renderGold(); renderMonth();
+    const total=data.sessions.length;
+    const mins=Math.round(data.sessions.reduce((a,s)=>a+s.dur,0)/60);
+    const avgAcc=total? Math.round(data.sessions.reduce((a,s)=>a+s.acc,0)/total):0;
+    $('stTotal').textContent=total;
+    $('stTime').textContent=mins+' min';
+    $('stAcc').textContent= total? avgAcc+'%':'—';
+    $('stBest').textContent= data.best||'—';
+    show('statsScreen');
+    setTimeout(()=>runStatsTour(false),500);
+  }
+
+  /* ---- Guide des boutons ---- */
+  const HOME_TOUR=[
+    {sel:'#modeBtn', t:'<b>Classique / Inversé</b>Touche pour changer de mode. <b style="display:inline">Classique</b> (bleu) : on te donne un événement, tu tapes son année. <b style="display:inline;color:#D13A3A">Inversé</b> (rouge) : on te donne une année, tu retrouves l\u2019événement parmi 4 choix.'},
+    {sel:'#bestPill', t:'<b>Record</b>Ton meilleur score en mode classique (le mode inversé a son propre record).'},
+    {sel:'#heroCard', t:'<b>Ta série</b>Les jours d\u2019affilée où tu t\u2019entraînes, avec la météo de ta semaine. Touche-la pour ouvrir les statistiques.'},
+    {sel:'.setup', t:'<b>Réglages</b>Choisis la durée, le niveau (événements de plus en plus pointus) et les périodes à réviser, de l\u2019Antiquité à aujourd\u2019hui.'},
+    {sel:'#startBtn', t:'<b>Commencer</b>Lance une partie avec tes réglages. Tape l\u2019année avec le clavier : elle se valide toute seule.'},
+    {sel:'#challengeBtn', t:'<b>Défi du jour</b>Des événements ciblés sur tes points faibles : ceux où tu te trompes ou réponds lentement.'},
+    {sel:'#statsBtn', t:'<b>Statistiques</b>Le calendrier du mois, la météo de chaque jour et tes courbes de progression.'}
+  ];
+  const STATS_TOUR=[
+    {sel:'#cal', t:'<b>Touche un jour</b>Tu vois alors son record, le nombre de séances, les erreurs et la précision. Chaque case montre la météo de la journée.'},
+    {sel:'#goldCard', t:'<b>Statut Gold</b>7 jours de beau temps d\u2019affilée te font gagner le statut Gold.'},
+    {sel:'.month-nav', t:'<b>Changer de mois</b>Utilise les flèches pour parcourir les mois précédents.'}
+  ];
+  let tourSteps=[], tourI=0, tourDone=null;
+  function tourShow(){
+    const st=tourSteps[tourI], el=document.querySelector(st.sel);
+    if(!el){ tourNext(); return; }
+    el.scrollIntoView({block:'center'});
+    setTimeout(()=>{
+      const r=el.getBoundingClientRect(), pad=6, ring=$('tourRing'), b=$('tourBubble'), ar=$('tourArrow');
+      ring.style.left=(r.left-pad)+'px'; ring.style.top=(r.top-pad)+'px';
+      ring.style.width=(r.width+pad*2)+'px'; ring.style.height=(r.height+pad*2)+'px';
+      $('tourText').innerHTML=st.t;
+      $('tourCount').textContent=(tourI+1)+' / '+tourSteps.length;
+      $('tourNext').textContent= tourI===tourSteps.length-1 ? 'Compris' : 'Suivant';
+      const bh=b.offsetHeight, below=r.bottom+pad+bh+26<innerHeight;
+      b.style.top= below ? (r.bottom+pad+16)+'px' : Math.max(8,r.top-pad-16-bh)+'px';
+      const bw=b.offsetWidth, bl=b.getBoundingClientRect().left;
+      const cx=Math.min(Math.max(r.left+r.width/2-bl-8,18),bw-34);
+      ar.style.left=cx+'px'; ar.style.top= below?'-7px':''; ar.style.bottom= below?'':'-7px';
+    },60);
+  }
+  function tourNext(){ tourI++; if(tourI>=tourSteps.length) tourEnd(); else tourShow(); }
+  function tourEnd(){ $('tour').classList.remove('on'); if(tourDone) tourDone(); tourDone=null; }
+  function startTour(steps,done){ tourSteps=steps; tourI=0; tourDone=done||null; $('tour').classList.add('on'); tourShow(); }
+  $('tourNext').onclick=tourNext; $('tourSkip').onclick=tourEnd;
+  function runHomeTour(force){
+    if(!force && data.tourHome) return;
+    startTour(HOME_TOUR,()=>{ data.tourHome=1; save(data); });
+  }
+  function runStatsTour(force){
+    if(!force && data.tourStats) return;
+    startTour(STATS_TOUR,()=>{ data.tourStats=1; save(data); });
+  }
+  $('guideBtn').onclick=()=>{ show('home'); setTimeout(()=>runHomeTour(true),250); };
+  setTimeout(()=>runHomeTour(false),600);
+})();
+</script>
+<script>
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>
