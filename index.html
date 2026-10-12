@@ -337,14 +337,23 @@ button{font-family:inherit; border:none; cursor:pointer;}
 .qwrap{overflow-y:auto; align-items:safe center;}
 .mode-btn.learn{background:#1E7A4F;}
 .setup.learn-mode #durRow{opacity:.4; pointer-events:none;}
-.learn-panel{display:none; flex-direction:column; gap:10px; margin-top:4px; max-height:44vh; overflow-y:auto;}
-.learn-panel.on{display:flex;}
+.keyarea{position:relative; flex:none;}
+.keyarea .keypad, .keyarea .learn-skip{transition:opacity .22s ease, transform .3s cubic-bezier(.2,.8,.2,1);}
+.keyarea.answered .keypad, .keyarea.answered .learn-skip{opacity:0; transform:scale(.94); pointer-events:none;}
+.learn-panel{position:absolute; inset:0; display:flex; flex-direction:column; gap:8px; margin:0; opacity:0; transform:scale(.94) translateY(8px); pointer-events:none; transition:opacity .28s ease, transform .38s cubic-bezier(.2,.8,.2,1);}
+.learn-panel.on{opacity:1; transform:none; pointer-events:auto;}
+.learn-panel{padding-top:12px; box-sizing:border-box;}
+.lp-sum{flex:0 1 auto; min-height:0; overflow-y:auto;}
+.learn-panel .btn-pill{margin-top:auto;}
+.lp-res,.lp-link,.lp-credit,.learn-panel .btn-pill{flex:none;}
+.game-card.enter{animation:cardIn .34s cubic-bezier(.2,.8,.2,1);}
+@keyframes cardIn{0%{opacity:.0; transform:scale(.94);} 100%{opacity:1; transform:none;}}
 .lp-res{font-size:16px; font-weight:800;} .lp-res.ok{color:var(--good);} .lp-res.ko{color:var(--bad);}
 .lp-sum{font-size:13.5px; line-height:1.4; color:var(--ink);}
 .game-card.hist.tight{padding:46px 16px 26px; min-height:0;} .game-card.hist.tight .q-text{font-size:18px;}
 .lp-link{display:inline-block; font-size:14px; font-weight:700; color:var(--accent); text-decoration:none;}
 .lp-credit{font-size:11px; color:var(--muted);}
-.learn-skip{display:none; margin:2px auto 0; background:none; color:var(--muted); font-size:13px; font-weight:600; padding:8px 12px; touch-action:manipulation;}
+.learn-skip{display:none; margin:2px auto 0; width:100%; background:none; color:var(--muted); font-size:13px; font-weight:600; padding:8px 12px; touch-action:manipulation;}
 #drill.learning .combo{display:none;}
 #drill.learning .timer:first-of-type{font-size:13px; color:var(--good);}
 .dtable a.wl{color:var(--accent); text-decoration:none;}
@@ -440,7 +449,7 @@ button{font-family:inherit; border:none; cursor:pointer;}
       <div class="corner br"><span class="cval" id="cornerTxt2">Antiq.</span><span class="csuit">⏳</span></div>
     </div>
   </div>
-  <div class="keypad" id="keypad"></div>
+  <div class="keyarea" id="keyarea"><div class="keypad" id="keypad"></div>
   <div class="choices" id="choices"></div>
   <div class="learn-panel" id="learnPanel">
     <div class="lp-res" id="lpRes"></div>
@@ -449,7 +458,7 @@ button{font-family:inherit; border:none; cursor:pointer;}
     <div class="lp-credit">Texte et image : Wikipédia (licence CC BY-SA)</div>
     <button class="btn-pill" id="lpNext">Suivant</button>
   </div>
-  <button class="learn-skip" id="learnSkip">Je ne sais pas : voir la réponse</button>
+  <button class="learn-skip" id="learnSkip">Je ne sais pas : voir la réponse</button></div>
 </div>
 
 <div id="results" class="screen">
@@ -996,7 +1005,8 @@ const EVENTS=[
     }
     const im=$('qImg'); im.style.display='none'; im.style.maxHeight=''; im.removeAttribute('src'); im.onload=null; $('gameCard').classList.remove('tight');
     $('learnPanel').classList.remove('on');
-    if(learnMode){ kp.style.display=''; $('learnSkip').style.display='block'; }
+    $('keyarea').classList.remove('answered');
+    if(learnMode){ kp.style.display=''; $('learnSkip').style.display='block'; const gc=$('gameCard'); gc.classList.remove('enter'); void gc.offsetWidth; gc.classList.add('enter'); }
     if(!drillInv) showImg(cur);   // en mode inversé l'image donnerait la réponse : elle apparaît après ton choix
     qStart=performance.now();
   }
@@ -1047,12 +1057,11 @@ const EVENTS=[
     $('scoreEl').textContent=learnOk+' / '+learnSeen;
     isOk ? sound.correct() : sound.wrong();
     const e=cur;
-    kp.style.display='none'; $('learnSkip').style.display='none';
+    $('keyarea').classList.add('answered');
     const r=$('lpRes'); r.className='lp-res '+(isOk?'ok':'ko'); r.textContent = isOk ? '✓ Bonne année : '+yr : '✗ C’était en '+yr;
     $('lpSum').textContent='Chargement du résumé…';
     $('lpLink').href=wikiHref(e.l);
-    $('answerEl').style.display='none';
-    $('learnPanel').classList.add('on'); $('learnPanel').scrollTop=0; fitCard();
+    $('lpSum').scrollTop=0; $('learnPanel').classList.add('on');
     pulseCard(isOk?'pop-good':'pop-bad');
     if(!isOk){ const a=$('answerEl'); a.textContent=yr; a.className='answer num reveal'; }
     wikiInfo(e).then(info=>{
