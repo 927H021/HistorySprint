@@ -1,6 +1,6 @@
 /* HistorySprint — service worker.
    Pour publier une nouvelle version : changer CACHE_VERSION ci-dessous. */
-const CACHE_VERSION = 'historysprint-v13';
+const CACHE_VERSION = 'historysprint-v14';
 const SHELL = [
   './', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png',

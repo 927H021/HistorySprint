@@ -1031,7 +1031,7 @@ const EVENTS=[
     const im=$('qImg'); im.style.display='none'; im.style.objectFit=''; im.removeAttribute('src'); im.onload=null;
     $('learnPanel').classList.remove('on');
     $('keyarea').classList.remove('answered');
-    if(learnMode){ kp.style.display=''; $('learnSkip').style.display='block'; const gc=$('gameCard'); gc.classList.remove('enter'); void gc.offsetWidth; gc.classList.add('enter'); }
+    if(learnMode){ kp.style.display=''; $('learnSkip').style.display='block'; skipReadyAt=performance.now()+800; const gc=$('gameCard'); gc.classList.remove('enter'); void gc.offsetWidth; gc.classList.add('enter'); }
     if(!drillInv) showImg(cur);   // en mode inversé l'image donnerait la réponse : elle apparaît après ton choix
     qStart=performance.now();
   }
@@ -1077,6 +1077,7 @@ const EVENTS=[
     }
   }
 
+  let skipReadyAt=0;
   function showLearn(isOk, yr){
     learnSeen++; if(isOk) learnOk++;
     $('scoreEl').textContent=learnOk+' / '+learnSeen;
@@ -1096,7 +1097,7 @@ const EVENTS=[
     });
   }
   $('lpNext').onclick=()=>{ if(learnMode) nextQuestion(); };
-  $('learnSkip').onclick=()=>{ if(learnMode && !lockInput) judge(false,'—',performance.now()); };
+  $('learnSkip').onclick=()=>{ if(learnMode && !lockInput && performance.now()>=skipReadyAt) judge(false,'—',performance.now()); };
 
   const keys=['7','8','9','4','5','6','1','2','3','⌫','0','✓'];
   function pressKey(k){
