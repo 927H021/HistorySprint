@@ -1078,8 +1078,10 @@ const EVENTS=[
   }
 
   let skipReadyAt=0;
+  let lpReadyAt=0;
   function showLearn(isOk, yr){
     learnSeen++; if(isOk) learnOk++;
+    lpReadyAt=performance.now()+700;
     $('scoreEl').textContent=learnOk+' / '+learnSeen;
     isOk ? sound.correct() : sound.wrong();
     const e=cur;
@@ -1096,7 +1098,7 @@ const EVENTS=[
       else $('lpSum').textContent='Résumé indisponible pour le moment (connexion ?). Tu peux ouvrir la page Wikipédia avec le lien ci-dessous.';
     });
   }
-  $('lpNext').onclick=()=>{ if(learnMode) nextQuestion(); };
+  $('lpNext').onclick=()=>{ if(learnMode && performance.now()>=lpReadyAt) nextQuestion(); };
   $('learnSkip').onclick=()=>{ if(learnMode && !lockInput && performance.now()>=skipReadyAt) judge(false,'—',performance.now()); };
 
   const keys=['7','8','9','4','5','6','1','2','3','⌫','0','✓'];
