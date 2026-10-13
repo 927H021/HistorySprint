@@ -332,8 +332,20 @@ button{font-family:inherit; border:none; cursor:pointer;}
 .dtable .ev{font-weight:600; font-size:13px; line-height:1.25;}
 
 /* Illustration Wikipédia + mode apprentissage */
-.q-img{display:none; width:100%; height:auto; max-height:min(190px,24vh); object-fit:contain; border-radius:14px; margin-bottom:6px;}
-@media (max-height:720px){ .q-img{max-height:100px;} .game-card.hist{padding:46px 16px 28px; min-height:0;} .q-text{font-size:18px;} .key{padding:11px 0;} .learn-skip{padding:4px 12px;} }
+/* Carte : l'illustration occupe toute la largeur et toute la place disponible */
+.game-card.hist{width:100%; max-width:min(94vw,380px); height:100%; max-height:none; min-height:0; aspect-ratio:auto; padding:0; overflow:hidden; display:flex; flex-direction:column; align-items:stretch;}
+.game-card.hist .card-center{flex:1; min-height:0; display:flex; flex-direction:column; align-items:stretch; justify-content:center; gap:0; max-width:none; text-align:center;}
+.game-card.hist .card-center > :not(.q-img){padding-left:14px; padding-right:14px;}
+.game-card.hist .corner.br{display:none;}
+.game-card.hist .corner.tl{top:10px; left:10px; flex-direction:row; padding:3px 10px; border-radius:999px; background:rgba(255,255,255,.9); box-shadow:0 1px 5px rgba(0,0,0,.2); z-index:2;}
+.game-card.hist .corner.tl .csuit{display:none;}
+.game-card.hist .corner .cval{font-size:12px;}
+.q-img{display:none; flex:1 1 0; height:0; min-height:70px; width:100%; object-fit:cover; margin:0; border-radius:0; background:var(--bg);}
+.game-card.hist .q-text{padding-top:12px;}
+.game-card.hist .q-sub{padding-bottom:2px;}
+.game-card.hist .answer{align-self:center; margin:4px 0 12px; padding:0 8px 3px;}
+
+@media (max-height:720px){ .q-text{font-size:18px;} .key{padding:11px 0;} .learn-skip{padding:4px 12px;} }
 .qwrap{overflow-y:auto; align-items:safe center;}
 .mode-btn.learn{background:#1E7A4F;}
 .setup.learn-mode #durRow{opacity:.4; pointer-events:none;}
@@ -350,7 +362,6 @@ button{font-family:inherit; border:none; cursor:pointer;}
 @keyframes cardIn{0%{opacity:.0; transform:scale(.94);} 100%{opacity:1; transform:none;}}
 .lp-res{font-size:16px; font-weight:800;} .lp-res.ok{color:var(--good);} .lp-res.ko{color:var(--bad);}
 .lp-sum{font-size:13.5px; line-height:1.4; color:var(--ink);}
-.game-card.hist.tight{padding:46px 16px 26px; min-height:0;} .game-card.hist.tight .q-text{font-size:18px;}
 .lp-link{display:inline-block; font-size:14px; font-weight:700; color:var(--accent); text-decoration:none;}
 .lp-credit{font-size:11px; color:var(--muted);}
 .learn-skip{display:none; margin:2px auto 0; width:100%; background:none; color:var(--muted); font-size:13px; font-weight:600; padding:8px 12px; touch-action:manipulation;}
@@ -852,17 +863,12 @@ const EVENTS=[
     for(const p of parts){ if((out+p).length>max && out) break; out+=p; }
     return (out||t.slice(0,max)).trim();
   }
-  // La carte ne défile jamais : on réduit l'illustration (puis la taille du titre) pour qu'elle tienne dans la place disponible.
+  // L'illustration remplit sa zone : recadrée si la perte est faible (<= 20 %), sinon affichée entière.
   function fitCard(){
-    const wrap=document.querySelector('.qwrap'), card=$('gameCard'), im=$('qImg');
-    card.classList.remove('tight'); im.style.maxHeight='';
-    const has=(im.style.display==='block'), avail=wrap.clientHeight-16, over=()=>card.offsetHeight-avail;
-    if(over()<=0) return;
-    if(has){ const h=im.getBoundingClientRect().height; im.style.maxHeight=Math.max(70,Math.floor(h-over()))+'px'; }
-    if(over()<=0) return;
-    card.classList.add('tight');
-    if(has){ const h=im.getBoundingClientRect().height; im.style.maxHeight=Math.max(48,Math.floor(h-over()))+'px'; }
-    if(over()>0 && has) im.style.display='none';
+    const im=$('qImg'); if(!im.naturalWidth) return;
+    const r=im.getBoundingClientRect(); if(!r.width||!r.height) return;
+    const a=r.width/r.height, n=im.naturalWidth/im.naturalHeight;
+    im.style.objectFit = (1-Math.min(a,n)/Math.max(a,n) <= 0.3) ? 'cover' : 'contain';
   }
   window.addEventListener('resize', ()=>{ if($('drill').classList.contains('active')) fitCard(); });
   function prefetch(e){ wikiInfo(e).then(i=>{ if(i && i.i){ const im=new Image(); im.referrerPolicy='no-referrer'; im.src=i.i; } }); }
@@ -1003,7 +1009,7 @@ const EVENTS=[
       $('qSub').textContent = cur.y<0 ? 'En quelle année avant J.-C. ?' : 'En quelle année ?';
       a.style.display=''; a.textContent=' '; a.className='answer num';
     }
-    const im=$('qImg'); im.style.display='none'; im.style.maxHeight=''; im.removeAttribute('src'); im.onload=null; $('gameCard').classList.remove('tight');
+    const im=$('qImg'); im.style.display='none'; im.style.objectFit=''; im.removeAttribute('src'); im.onload=null;
     $('learnPanel').classList.remove('on');
     $('keyarea').classList.remove('answered');
     if(learnMode){ kp.style.display=''; $('learnSkip').style.display='block'; const gc=$('gameCard'); gc.classList.remove('enter'); void gc.offsetWidth; gc.classList.add('enter'); }
